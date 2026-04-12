@@ -216,18 +216,64 @@ function EntryPage({user,emps,entries,setEntries,branches,bt,et}){
 
 function AcctLog({user,entries,emps,branches}){const my=entries.filter(e=>e.by===user.id);return<div><h1 style={{fontSize:26,fontWeight:500,marginBottom:24}}>My Entries</h1>{my.length===0?<p style={{color:"#9AABB8",textAlign:"center",padding:40}}>No entries yet</p>:<div style={wrapS}><table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr><Th>Month</Th><Th>Pharmacist</Th><Th>Branch</Th><Th>KPI</Th><Th>Value</Th></tr></thead><tbody>{my.map((e,i)=><tr key={i} style={{borderBottom:"1px solid #E4EBF0"}}><Td>{e.mo}</Td><Td>{emps.find(x=>x.id===e.eid)?.name}</Td><Td>{branches.find(b=>b.id===e.bid)?.name}</Td><Td>{KPIS.find(k=>k.id===e.kid)?.name}</Td><Td b>{e.v.toLocaleString()}</Td></tr>)}</tbody></table></div>}</div>}
 
-function EmpsPage({emps,setEmps,branches}){const[show,setShow]=useState(false);const[f,setF]=useState({name:"",role:"pharmacist",bid:BRANCHES[0].id});
-  const add=()=>{if(!f.name)return;setEmps(p=>[...p,{id:"e"+Date.now(),...f,email:"",active:true}]);setF({name:"",role:"pharmacist",bid:BRANCHES[0].id});setShow(false);};
-  return<div><div style={{display:"flex",justifyContent:"space-between",marginBottom:24}}><h1 style={{fontSize:26,fontWeight:500}}>Employees</h1><button onClick={()=>setShow(true)} style={BS}>+ Add</button></div>
-    <div style={wrapS}><table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr><Th>Name</Th><Th>Role</Th><Th>Branch</Th><Th>Status</Th><Th>Action</Th></tr></thead>
-      <tbody>{emps.map(e=><tr key={e.id} style={{borderBottom:"1px solid #E4EBF0"}}><Td b>{e.name}</Td><Td><RP role={e.role}/></Td><Td>{branches.find(b=>b.id===e.bid)?.name||"All"}</Td><Td><Pill type={e.active?"success":"danger"}>{e.active?"Active":"Off"}</Pill></Td><Td><button onClick={()=>setEmps(p=>p.map(x=>x.id===e.id?{...x,active:!x.active}:x))} style={{...BG,fontSize:11,padding:"4px 10px"}}>{e.active?"Deactivate":"Activate"}</button></Td></tr>)}</tbody></table></div>
-    <Modal open={show} onClose={()=>setShow(false)} title="Add Employee">
-      <div style={{marginBottom:14}}><label style={LS}>Name</label><input value={f.name} onChange={e=>setF({...f,name:e.target.value})} style={IS}/></div>
+function EmpsPage({emps,setEmps,branches}){
+  const[show,setShow]=useState(false);
+  const[editId,setEditId]=useState(null);
+  const[delId,setDelId]=useState(null);
+  const blank={name:"",phone:"",email:"",role:"pharmacist",bid:BRANCHES[0].id};
+  const[f,setF]=useState(blank);
+
+  const openAdd=()=>{setF(blank);setEditId(null);setShow(true);};
+  const openEdit=(e)=>{setF({name:e.name,phone:e.phone||"",email:e.email||"",role:e.role,bid:e.bid||""});setEditId(e.id);setShow(true);};
+
+  const save=()=>{
+    if(!f.name)return;
+    if(editId){
+      setEmps(p=>p.map(x=>x.id===editId?{...x,...f}:x));
+    }else{
+      setEmps(p=>[...p,{id:"e"+Date.now(),...f,active:true}]);
+    }
+    setF(blank);setEditId(null);setShow(false);
+  };
+
+  const confirmDel=()=>{setEmps(p=>p.filter(x=>x.id!==delId));setDelId(null);};
+
+  return<div>
+    <div style={{display:"flex",justifyContent:"space-between",marginBottom:24}}><h1 style={{fontSize:26,fontWeight:500}}>Employees</h1><button onClick={openAdd} style={BS}>+ Add</button></div>
+    <div style={wrapS}><table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr><Th>Name</Th><Th>Role</Th><Th>Branch</Th><Th>Phone</Th><Th>Email</Th><Th>Status</Th><Th>Actions</Th></tr></thead>
+      <tbody>{emps.map(e=><tr key={e.id} style={{borderBottom:"1px solid #E4EBF0"}}>
+        <Td b>{e.name}</Td>
+        <Td><RP role={e.role}/></Td>
+        <Td>{branches.find(b=>b.id===e.bid)?.name||"All"}</Td>
+        <Td>{e.phone||"—"}</Td>
+        <Td>{e.email||"—"}</Td>
+        <Td><Pill type={e.active?"success":"danger"}>{e.active?"Active":"Off"}</Pill></Td>
+        <Td>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+            <button onClick={()=>openEdit(e)} style={{...BG,fontSize:11,padding:"4px 10px",color:"#0077B6",borderColor:"#00B4D8"}}>Edit</button>
+            <button onClick={()=>setEmps(p=>p.map(x=>x.id===e.id?{...x,active:!x.active}:x))} style={{...BG,fontSize:11,padding:"4px 10px"}}>{e.active?"Deactivate":"Activate"}</button>
+            <button onClick={()=>setDelId(e.id)} style={{...BG,fontSize:11,padding:"4px 10px",color:"#EF4444",borderColor:"#FCA5A5"}}>Delete</button>
+          </div>
+        </Td>
+      </tr>)}</tbody></table></div>
+
+    <Modal open={show} onClose={()=>{setShow(false);setEditId(null);}} title={editId?"Edit Employee":"Add Employee"}>
+      <div style={{marginBottom:14}}><label style={LS}>Full Name</label><input value={f.name} onChange={e=>setF({...f,name:e.target.value})} style={IS} placeholder="Enter name..."/></div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
+        <div><label style={LS}>Phone</label><input value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} style={IS} placeholder="05xxxxxxxx"/></div>
+        <div><label style={LS}>Email</label><input value={f.email} onChange={e=>setF({...f,email:e.target.value})} style={IS} placeholder="name@firstbrand.sa"/></div>
+      </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
         <div><label style={LS}>Role</label><select value={f.role} onChange={e=>setF({...f,role:e.target.value})} style={IS}><option value="pharmacist">Pharmacist</option><option value="manager">Manager</option><option value="accountant">Accountant</option><option value="admin">Admin</option></select></div>
-        <div><label style={LS}>Branch</label><select value={f.bid} onChange={e=>setF({...f,bid:e.target.value})} style={IS}><option value="">None</option>{branches.map(b=><option key={b.id} value={b.id}>{b.name}</option>)}</select></div>
+        <div><label style={LS}>Branch</label><select value={f.bid} onChange={e=>setF({...f,bid:e.target.value})} style={IS}><option value="">None (Accountant)</option>{branches.map(b=><option key={b.id} value={b.id}>{b.name}</option>)}</select></div>
       </div>
-      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setShow(false)} style={BG}>Cancel</button><button onClick={add} style={BS}>Add</button></div>
+      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>{setShow(false);setEditId(null);}} style={BG}>Cancel</button><button onClick={save} style={BS}>{editId?"Save Changes":"Add Employee"}</button></div>
+    </Modal>
+
+    <Modal open={!!delId} onClose={()=>setDelId(null)} title="Delete Employee">
+      <p style={{fontSize:14,color:"#6B7D8E",marginBottom:8}}>Are you sure you want to permanently delete <b>{emps.find(e=>e.id===delId)?.name}</b>?</p>
+      <p style={{fontSize:12,color:"#EF4444",marginBottom:16}}>This action cannot be undone. All their KPI data will remain but won't be linked to this employee.</p>
+      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setDelId(null)} style={BG}>Cancel</button><button onClick={confirmDel} style={{...BS,background:"linear-gradient(135deg,#EF4444,#DC2626)"}}>Delete</button></div>
     </Modal>
   </div>;
 }
