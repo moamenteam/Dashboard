@@ -8,6 +8,17 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:system-ui,-apple-system,sans-serif;background:#F7F9FC;color:#1A2B3C}
 #root{display:flex;min-height:100vh}
+@media(max-width:768px){
+  .sidebar-desktop{display:none!important}
+  .main-content{padding:16px!important}
+  .mobile-header{display:flex!important}
+  .mobile-overlay{display:block!important}
+}
+@media(min-width:769px){
+  .mobile-header{display:none!important}
+  .mobile-overlay{display:none!important}
+  .sidebar-mobile{display:none!important}
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -477,21 +488,44 @@ function LoginPage({onLogin,emps}){const[email,setEmail]=useState("");const[err,
 }
 
 function App(){
-  const[loggedIn,setLoggedIn]=useState(true);
-  const[page,setPage]=useState("dashboard");
-  const[user,setUser]=useState(EMPS[0]);
-  const[emps,setEmps]=useState(EMPS);
-  const[kpis,setKpis]=useState(KPIS);
-  const[entries,setEntries]=useState(I_EN);
-  const[anns,setAnns]=useState(I_ANN);
-  const[dms,setDms]=useState([]);
-  const[tasks,setTasks]=useState(I_TASKS);
-  const[branches,setBranches]=useState(BRANCHES);
-  const[bt,setBt]=useState(I_BT);
-  const[et,setEt]=useState(I_ET);
-  const[ap,setAp]=useState([{id:"ap1",eid:"e2",kid:"k1"},{id:"ap2",eid:"e2",kid:"k4"}]);
-  const[files,setFiles]=useState(I_FILES.map(f=>({...f,fid:null})));
-  const[folders,setFolders]=useState([{id:"fl1",name:"SOPs",parent:null},{id:"fl2",name:"Training",parent:null},{id:"fl3",name:"Reports",parent:null}]);
+// localStorage helpers
+function loadState(key,fallback){try{const v=localStorage.getItem("fb_"+key);return v?JSON.parse(v):fallback;}catch(e){return fallback;}}
+function saveState(key,val){try{localStorage.setItem("fb_"+key,JSON.stringify(val));}catch(e){}}
+
+function App(){
+  const[loggedIn,setLoggedIn]=useState(()=>loadState("loggedIn",true));
+  const[page,setPage]=useState(()=>loadState("page","dashboard"));
+  const[user,setUser]=useState(()=>loadState("user",EMPS[0]));
+  const[emps,setEmps]=useState(()=>loadState("emps",EMPS));
+  const[kpis,setKpis]=useState(()=>loadState("kpis",KPIS));
+  const[entries,setEntries]=useState(()=>loadState("entries",I_EN));
+  const[anns,setAnns]=useState(()=>loadState("anns",I_ANN));
+  const[dms,setDms]=useState(()=>loadState("dms",[]));
+  const[tasks,setTasks]=useState(()=>loadState("tasks",I_TASKS));
+  const[branches,setBranches]=useState(()=>loadState("branches",BRANCHES));
+  const[bt,setBt]=useState(()=>loadState("bt",I_BT));
+  const[et,setEt]=useState(()=>loadState("et",I_ET));
+  const[ap,setAp]=useState(()=>loadState("ap",[{id:"ap1",eid:"e2",kid:"k1"},{id:"ap2",eid:"e2",kid:"k4"}]));
+  const[files,setFiles]=useState(()=>loadState("files",I_FILES.map(f=>({...f,fid:null}))));
+  const[folders,setFolders]=useState(()=>loadState("folders",[{id:"fl1",name:"SOPs",parent:null},{id:"fl2",name:"Training",parent:null},{id:"fl3",name:"Reports",parent:null}]));
+  const[mobMenu,setMobMenu]=useState(false);
+
+  // Auto-save to localStorage
+  React.useEffect(()=>{saveState("loggedIn",loggedIn)},[loggedIn]);
+  React.useEffect(()=>{saveState("page",page)},[page]);
+  React.useEffect(()=>{saveState("user",user)},[user]);
+  React.useEffect(()=>{saveState("emps",emps)},[emps]);
+  React.useEffect(()=>{saveState("kpis",kpis)},[kpis]);
+  React.useEffect(()=>{saveState("entries",entries)},[entries]);
+  React.useEffect(()=>{saveState("anns",anns)},[anns]);
+  React.useEffect(()=>{saveState("dms",dms)},[dms]);
+  React.useEffect(()=>{saveState("tasks",tasks)},[tasks]);
+  React.useEffect(()=>{saveState("branches",branches)},[branches]);
+  React.useEffect(()=>{saveState("bt",bt)},[bt]);
+  React.useEffect(()=>{saveState("et",et)},[et]);
+  React.useEffect(()=>{saveState("ap",ap)},[ap]);
+  React.useEffect(()=>{saveState("files",files)},[files]);
+  React.useEffect(()=>{saveState("folders",folders)},[folders]);
 
   const defPage=(role)=>role==="admin"?"dashboard":role==="accountant"?"entry":"msgs";
 
@@ -509,39 +543,70 @@ function App(){
     {id:"settings",l:"Settings",show:r==="admin"}
   ];
 
-  return<div style={{display:"flex",minHeight:"100vh"}}>
-    <div style={{width:240,minWidth:240,background:"#fff",borderRight:"1px solid #E4EBF0",display:"flex",flexDirection:"column",position:"sticky",top:0,height:"100vh"}}>
-      <div style={{padding:"20px 16px",borderBottom:"1px solid #E4EBF0",display:"flex",alignItems:"center",gap:10}}>
-        <div style={{width:40,height:40,borderRadius:10,background:"linear-gradient(135deg,#00B4D8,#0077B6)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:"#fff",fontSize:18,fontWeight:700}}>F</span></div>
-        <div><div style={{fontSize:15,fontWeight:600,color:"#0077B6"}}>First Brand</div><div style={{fontSize:9,color:"#F58634",fontWeight:600,letterSpacing:1.5,textTransform:"uppercase"}}>Pharmacy</div></div>
-      </div>
-      <div style={{flex:1,padding:10,display:"flex",flexDirection:"column",gap:2,overflowY:"auto"}}>
-        <div style={{fontSize:10,color:"#9AABB8",textTransform:"uppercase",letterSpacing:1.5,padding:"10px 10px 4px",fontWeight:600}}>Menu</div>
-        {nav.filter(n=>n.show).map(n=><div key={n.id} onClick={()=>setPage(n.id)} style={{padding:"9px 12px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:500,color:page===n.id?"#fff":"#6B7D8E",background:page===n.id?"linear-gradient(135deg,#00B4D8,#0077B6)":"transparent",display:"flex",alignItems:"center",gap:8}}>
-          {n.l}{n.badge>0&&<span style={{marginLeft:"auto",minWidth:16,height:16,borderRadius:8,fontSize:9,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",background:page===n.id?"rgba(255,255,255,.3)":"#EF4444",color:"#fff"}}>{n.badge}</span>}
-        </div>)}
-        <div style={{flex:1}}/>
-        <div onClick={()=>setLoggedIn(false)} style={{padding:"9px 12px",borderRadius:8,cursor:"pointer",fontSize:13,color:"#EF4444"}}>Sign Out</div>
-      </div>
-      <div style={{padding:"8px 10px",borderTop:"1px solid #E4EBF0"}}>
-        <div style={{fontSize:9,color:"#9AABB8",marginBottom:3,fontWeight:600,textTransform:"uppercase",letterSpacing:1}}>Demo</div>
-        <select value={user.id} onChange={e=>{const u=emps.find(x=>x.id===e.target.value);setUser(u);setPage(defPage(u.role));}} style={{...IS,fontSize:11,padding:"5px 8px"}}>{emps.map(e=><option key={e.id} value={e.id}>{e.name} ({e.role})</option>)}</select>
-      </div>
-      <div style={{padding:14,borderTop:"1px solid #E4EBF0",display:"flex",alignItems:"center",gap:10}}>
-        <div style={{width:32,height:32,borderRadius:8,background:r==="accountant"?"linear-gradient(135deg,#F58634,#D46A1A)":"linear-gradient(135deg,#00B4D8,#0077B6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"#fff"}}>{user.name[0]}</div>
-        <div><div style={{fontSize:12,fontWeight:600}}>{user.name}</div><RP role={r}/></div>
-      </div>
+  const resetData=()=>{if(confirm("Reset all data to demo defaults? This cannot be undone.")){
+    ["loggedIn","page","user","emps","kpis","entries","anns","dms","tasks","branches","bt","et","ap","files","folders"].forEach(k=>localStorage.removeItem("fb_"+k));
+    location.reload();
+  }};
+
+  const sidebarContent=<>
+    <div style={{padding:"20px 16px",borderBottom:"1px solid #E4EBF0",display:"flex",alignItems:"center",gap:10}}>
+      <div style={{width:40,height:40,borderRadius:10,background:"linear-gradient(135deg,#00B4D8,#0077B6)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:"#fff",fontSize:18,fontWeight:700}}>F</span></div>
+      <div><div style={{fontSize:15,fontWeight:600,color:"#0077B6"}}>First Brand</div><div style={{fontSize:9,color:"#F58634",fontWeight:600,letterSpacing:1.5,textTransform:"uppercase"}}>Pharmacy</div></div>
     </div>
-    <div style={{flex:1,padding:"24px 28px",overflowY:"auto"}}>
-      {page==="dashboard"&&r==="pharmacist"&&<PharmDash user={user} entries={entries} bt={bt} et={et} branches={branches}/>}
-      {page==="dashboard"&&(r==="admin"||r==="manager")&&<Dashboard user={user} emps={emps} entries={entries} bt={bt} et={et} branches={branches}/>}
-      {page==="entry"&&<EntryPage user={user} emps={emps} entries={entries} setEntries={setEntries} branches={branches} bt={bt} et={et}/>}
-      {page==="mylog"&&<AcctLog user={user} entries={entries} emps={emps} branches={branches}/>}
-      {page==="emps"&&<EmpsPage emps={emps} setEmps={setEmps} branches={branches}/>}
-      {page==="tasks"&&<TasksPage user={user} emps={emps} tasks={tasks} setTasks={setTasks}/>}
-      {page==="msgs"&&<MsgsPage user={user} emps={emps} anns={anns} setAnns={setAnns} dms={dms} setDms={setDms}/>}
-      {page==="files"&&<FilesPage user={user} branches={branches} files={files} setFiles={setFiles} folders={folders} setFolders={setFolders}/>}
-      {page==="settings"&&<SettingsPage emps={emps} branches={branches} setBranches={setBranches} bt={bt} setBt={setBt} et={et} setEt={setEt} ap={ap} setAp={setAp} kpis={kpis} setKpis={setKpis}/>}
+    <div style={{flex:1,padding:10,display:"flex",flexDirection:"column",gap:2,overflowY:"auto"}}>
+      <div style={{fontSize:10,color:"#9AABB8",textTransform:"uppercase",letterSpacing:1.5,padding:"10px 10px 4px",fontWeight:600}}>Menu</div>
+      {nav.filter(n=>n.show).map(n=><div key={n.id} onClick={()=>{setPage(n.id);setMobMenu(false);}} style={{padding:"9px 12px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:500,color:page===n.id?"#fff":"#6B7D8E",background:page===n.id?"linear-gradient(135deg,#00B4D8,#0077B6)":"transparent",display:"flex",alignItems:"center",gap:8}}>
+        {n.l}{n.badge>0&&<span style={{marginLeft:"auto",minWidth:16,height:16,borderRadius:8,fontSize:9,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",background:page===n.id?"rgba(255,255,255,.3)":"#EF4444",color:"#fff"}}>{n.badge}</span>}
+      </div>)}
+      <div style={{flex:1}}/>
+      {r==="admin"&&<div onClick={resetData} style={{padding:"9px 12px",borderRadius:8,cursor:"pointer",fontSize:12,color:"#9AABB8"}}>Reset Demo Data</div>}
+      <div onClick={()=>{setLoggedIn(false);setMobMenu(false);}} style={{padding:"9px 12px",borderRadius:8,cursor:"pointer",fontSize:13,color:"#EF4444"}}>Sign Out</div>
+    </div>
+    <div style={{padding:"8px 10px",borderTop:"1px solid #E4EBF0"}}>
+      <div style={{fontSize:9,color:"#9AABB8",marginBottom:3,fontWeight:600,textTransform:"uppercase",letterSpacing:1}}>Demo</div>
+      <select value={user.id} onChange={e=>{const u=emps.find(x=>x.id===e.target.value);setUser(u);setPage(defPage(u.role));setMobMenu(false);}} style={{...IS,fontSize:11,padding:"5px 8px"}}>{emps.map(e=><option key={e.id} value={e.id}>{e.name} ({e.role})</option>)}</select>
+    </div>
+    <div style={{padding:14,borderTop:"1px solid #E4EBF0",display:"flex",alignItems:"center",gap:10}}>
+      <div style={{width:32,height:32,borderRadius:8,background:r==="accountant"?"linear-gradient(135deg,#F58634,#D46A1A)":"linear-gradient(135deg,#00B4D8,#0077B6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"#fff"}}>{user.name[0]}</div>
+      <div><div style={{fontSize:12,fontWeight:600}}>{user.name}</div><RP role={r}/></div>
+    </div>
+  </>;
+
+  const mainContent=<>
+    {page==="dashboard"&&r==="pharmacist"&&<PharmDash user={user} entries={entries} bt={bt} et={et} branches={branches}/>}
+    {page==="dashboard"&&(r==="admin"||r==="manager")&&<Dashboard user={user} emps={emps} entries={entries} bt={bt} et={et} branches={branches}/>}
+    {page==="entry"&&<EntryPage user={user} emps={emps} entries={entries} setEntries={setEntries} branches={branches} bt={bt} et={et}/>}
+    {page==="mylog"&&<AcctLog user={user} entries={entries} emps={emps} branches={branches}/>}
+    {page==="emps"&&<EmpsPage emps={emps} setEmps={setEmps} branches={branches}/>}
+    {page==="tasks"&&<TasksPage user={user} emps={emps} tasks={tasks} setTasks={setTasks}/>}
+    {page==="msgs"&&<MsgsPage user={user} emps={emps} anns={anns} setAnns={setAnns} dms={dms} setDms={setDms}/>}
+    {page==="files"&&<FilesPage user={user} branches={branches} files={files} setFiles={setFiles} folders={folders} setFolders={setFolders}/>}
+    {page==="settings"&&<SettingsPage emps={emps} branches={branches} setBranches={setBranches} bt={bt} setBt={setBt} et={et} setEt={setEt} ap={ap} setAp={setAp} kpis={kpis} setKpis={setKpis}/>}
+  </>;
+
+  return<div style={{display:"flex",minHeight:"100vh"}}>
+    {/* Mobile header */}
+    <div className="mobile-header" style={{display:"none",position:"fixed",top:0,left:0,right:0,height:56,background:"#fff",borderBottom:"1px solid #E4EBF0",zIndex:90,alignItems:"center",padding:"0 16px",gap:12}}>
+      <div onClick={()=>setMobMenu(!mobMenu)} style={{width:36,height:36,borderRadius:8,background:"#F7F9FC",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:18}}>☰</div>
+      <div style={{fontSize:15,fontWeight:600,color:"#0077B6",flex:1}}>First Brand</div>
+      <div style={{width:28,height:28,borderRadius:6,background:"linear-gradient(135deg,#00B4D8,#0077B6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#fff"}}>{user.name[0]}</div>
+    </div>
+
+    {/* Mobile overlay + sidebar */}
+    {mobMenu&&<div className="mobile-overlay" onClick={()=>setMobMenu(false)} style={{display:"none",position:"fixed",inset:0,background:"rgba(0,0,0,.3)",zIndex:95}}/>}
+    {mobMenu&&<div className="sidebar-mobile" style={{position:"fixed",top:0,left:0,bottom:0,width:280,background:"#fff",zIndex:100,display:"flex",flexDirection:"column",boxShadow:"4px 0 20px rgba(0,0,0,.1)"}}>
+      {sidebarContent}
+    </div>}
+
+    {/* Desktop sidebar */}
+    <div className="sidebar-desktop" style={{width:240,minWidth:240,background:"#fff",borderRight:"1px solid #E4EBF0",display:"flex",flexDirection:"column",position:"sticky",top:0,height:"100vh"}}>
+      {sidebarContent}
+    </div>
+
+    {/* Main content */}
+    <div className="main-content" style={{flex:1,padding:"24px 28px",overflowY:"auto",marginTop:0}}>
+      <div className="mobile-header" style={{display:"none",height:56}}/>
+      {mainContent}
     </div>
   </div>;
 }
