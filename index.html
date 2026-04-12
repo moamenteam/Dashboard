@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>First Brand Pharmacy — Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;background:#F7F9FC;color:#1A2B3C}
+#root{display:flex;min-height:100vh}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState}=React;
+
+const BRANCHES=[{id:"b1",name:"Sawarmah"},{id:"b2",name:"Maajer"},{id:"b3",name:"Sabya"},{id:"b4",name:"Kharish"},{id:"b5",name:"Makrmyah"},{id:"b6",name:"Dehmah"}];
+
+const KPIS=[
+{id:"k1",name:"Sales Target",code:"sales",inp:"sar",w:55,tl:"branch",st:"prop",cap:false,ft:null},
+{id:"k2",name:"Basket Size",code:"basket",inp:"sar",w:10,tl:"pharmacist",st:"prop",cap:false,ft:null},
+{id:"k3",name:"Customer Registration",code:"reg",inp:"pct",w:10,tl:"fixed",st:"prop",cap:false,ft:90},
+{id:"k4",name:"Expire Target",code:"expire",inp:"sar",w:10,tl:"branch",st:"bin",cap:true,ft:null,bt:1.5},
+{id:"k5",name:"Lab Target",code:"lab",inp:"sar",w:10,tl:"pharmacist",st:"prop",cap:false,ft:null},
+{id:"k6",name:"Video Consultation",code:"video",inp:"count",w:5,tl:"pharmacist",st:"prop",cap:false,ft:null}
+];
+
+const EMPS=[
+{id:"e1",name:"Moamen",role:"admin",bid:"b1",email:"moamen@firstbrand.sa",active:true},
+{id:"e2",name:"Sara",role:"accountant",bid:null,email:"sara@firstbrand.sa",active:true},
+{id:"e3",name:"Khalid",role:"manager",bid:"b1",email:"khalid@firstbrand.sa",active:true},
+{id:"e4",name:"Ahmed Hassan",role:"pharmacist",bid:"b1",email:"ahmed@firstbrand.sa",active:true},
+{id:"e5",name:"Fatima Ali",role:"pharmacist",bid:"b2",email:"fatima@firstbrand.sa",active:true},
+{id:"e6",name:"Youssef",role:"manager",bid:"b2",email:"youssef@firstbrand.sa",active:true},
+{id:"e7",name:"Nora Saeed",role:"pharmacist",bid:"b3",email:"nora@firstbrand.sa",active:true},
+{id:"e8",name:"Omar Faisal",role:"pharmacist",bid:"b4",email:"omar@firstbrand.sa",active:true}
+];
+
+const MO="2026-04";
+
+const I_BT=[
+{bid:"b1",kid:"k1",v:150000,mo:MO},{bid:"b2",kid:"k1",v:120000,mo:MO},
+{bid:"b3",kid:"k1",v:100000,mo:MO},{bid:"b4",kid:"k1",v:90000,mo:MO}
+];
+
+const I_ET=[
+{eid:"e4",kid:"k2",v:45,mo:MO},{eid:"e4",kid:"k5",v:8000,mo:MO},{eid:"e4",kid:"k6",v:20,mo:MO},
+{eid:"e5",kid:"k2",v:42,mo:MO},{eid:"e5",kid:"k5",v:6000,mo:MO},{eid:"e5",kid:"k6",v:15,mo:MO},
+{eid:"e7",kid:"k2",v:40,mo:MO},{eid:"e7",kid:"k5",v:5000,mo:MO},{eid:"e7",kid:"k6",v:12,mo:MO},
+{eid:"e8",kid:"k2",v:38,mo:MO},{eid:"e8",kid:"k5",v:4500,mo:MO},{eid:"e8",kid:"k6",v:10,mo:MO}
+];
+
+const I_EN=[
+{eid:"e4",kid:"k1",bid:"b1",v:142000,mo:MO,by:"e1"},
+{eid:"e4",kid:"k2",bid:"b1",v:48,mo:MO,by:"e1"},
+{eid:"e4",kid:"k3",bid:"b1",v:92,mo:MO,by:"e1"},
+{eid:"e4",kid:"k4",bid:"b1",v:1800,mo:MO,by:"e1"},
+{eid:"e4",kid:"k5",bid:"b1",v:9200,mo:MO,by:"e1"},
+{eid:"e4",kid:"k6",bid:"b1",v:24,mo:MO,by:"e1"},
+{eid:"e5",kid:"k1",bid:"b2",v:115000,mo:MO,by:"e2"},
+{eid:"e5",kid:"k2",bid:"b2",v:39,mo:MO,by:"e2"},
+{eid:"e5",kid:"k3",bid:"b2",v:85,mo:MO,by:"e2"},
+{eid:"e5",kid:"k4",bid:"b2",v:2500,mo:MO,by:"e2"},
+{eid:"e5",kid:"k5",bid:"b2",v:5800,mo:MO,by:"e2"},
+{eid:"e5",kid:"k6",bid:"b2",v:18,mo:MO,by:"e2"},
+{eid:"e7",kid:"k1",bid:"b3",v:88000,mo:MO,by:"e1"},
+{eid:"e7",kid:"k2",bid:"b3",v:44,mo:MO,by:"e1"},
+{eid:"e7",kid:"k3",bid:"b3",v:95,mo:MO,by:"e1"},
+{eid:"e7",kid:"k4",bid:"b3",v:900,mo:MO,by:"e1"},
+{eid:"e7",kid:"k5",bid:"b3",v:6200,mo:MO,by:"e1"},
+{eid:"e7",kid:"k6",bid:"b3",v:14,mo:MO,by:"e1"}
+];
+
+const I_ANN=[
+{id:"a1",sid:"e1",title:"Ramadan Hours",body:"All branches 9AM-12AM during Ramadan.",tt:"all",pri:"urgent",wa:true,at:new Date(Date.now()-3600000).toISOString()},
+{id:"a2",sid:"e1",title:"Expire Policy Update",body:"Threshold reviewed monthly. Ensure stock rotation.",tt:"all",pri:"normal",wa:false,at:new Date(Date.now()-172800000).toISOString()}
+];
+
+const I_TASKS=[
+{id:"t1",by:"e1",title:"Monthly inventory count",desc:"Full count for controlled substances.",tt:"all_branches",te:null,at2:null,due:"2026-04-30",done:false,db:null,wa:true,cat:new Date(Date.now()-86400000).toISOString()},
+{id:"t2",by:"e1",title:"Update Ramadan shelves",desc:null,tt:"all_branches",te:null,at2:null,due:"2026-04-15",done:false,db:null,wa:false,cat:new Date(Date.now()-259200000).toISOString()},
+{id:"t3",by:"e1",title:"Submit insurance report",desc:null,tt:"employee",te:"e4",at2:"e4",due:null,done:true,db:"e4",wa:false,cat:new Date(Date.now()-432000000).toISOString()}
+];
+
+const I_FILES=[
+{id:"f1",name:"SOPs_2026.pdf",type:"pdf",tt:"all",tid:null,desc:"Updated SOPs"},
+{id:"f2",name:"Sawarmah_Layout.png",type:"img",tt:"branch",tid:"b1",desc:"Floor plan"}
+];
+
+function calcScore(emp,entries,bt,et){
+  const sv=(entries.find(e=>e.eid===emp.id&&e.kid==="k1")||{}).v||0;
+  const res=KPIS.map(k=>{
+    const en=entries.find(e=>e.eid===emp.id&&e.kid===k.id);
+    if(!en)return{k,v:null,t:null,s:null};
+    let t=null;
+    if(k.tl==="branch")t=(bt.find(x=>x.bid===emp.bid&&x.kid===k.id)||{}).v;
+    else if(k.tl==="pharmacist")t=(et.find(x=>x.eid===emp.id&&x.kid===k.id)||{}).v;
+    else if(k.tl==="fixed")t=k.ft;
+    let s=0;
+    if(k.st==="bin"){const p=sv>0?(en.v/sv)*100:100;s=p<=(k.bt||1.5)?k.w:0;}
+    else if(t&&t>0){s=(en.v/t)*k.w;if(k.cap)s=Math.min(s,k.w);}
+    return{k,v:en.v,t,s:Math.round(s*100)/100};
+  });
+  return{res,total:Math.round(res.reduce((a,r)=>a+(r.s||0),0)*100)/100};
+}
+
+const tAgo=d=>{const m=Math.floor((Date.now()-new Date(d).getTime())/60000);if(m<60)return m+"m";const h=Math.floor(m/60);return h<24?h+"h":Math.floor(h/24)+"d";};
+
+const IS={background:"#F7F9FC",border:"1px solid #E4EBF0",borderRadius:8,padding:"9px 12px",fontSize:13,color:"#1A2B3C",width:"100%",outline:"none",fontFamily:"inherit",boxSizing:"border-box"};
+const BS={padding:"8px 16px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:"none",background:"linear-gradient(135deg,#00B4D8,#0077B6)",color:"#fff",fontFamily:"inherit",display:"inline-flex",alignItems:"center",gap:6};
+const BG={padding:"8px 16px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",background:"transparent",color:"#6B7D8E",border:"1px solid #E4EBF0",fontFamily:"inherit"};
+const LS={fontSize:11,color:"#6B7D8E",textTransform:"uppercase",letterSpacing:1,display:"block",marginBottom:5,fontWeight:600};
+const TS={padding:"7px 14px",borderRadius:7,fontSize:12,fontWeight:500,cursor:"pointer",border:"none",fontFamily:"inherit"};
+const cardS={background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:"18px 20px",position:"relative",overflow:"hidden"};
+const acS={position:"absolute",top:0,left:0,right:0,height:3};
+const wrapS={background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,overflow:"hidden",marginBottom:20};
+const headS={padding:"14px 20px",borderBottom:"1px solid #E4EBF0",display:"flex",justifyContent:"space-between",alignItems:"center"};
+
+function Pill({type,children}){const c={success:"#F0FDF4,#16A34A",danger:"#FEF2F2,#EF4444",warn:"#FFFBEB,#D97706",cyan:"#E8F8FC,#0077B6",orange:"#FEF3E8,#D46A1A",gray:"#F1F5F9,#6B7D8E"};const[bg,fg]=(c[type]||c.gray).split(",");return<span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:20,background:bg,color:fg}}>{children}</span>}
+function Modal({open,onClose,title,children}){if(!open)return null;return<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.3)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100}} onClick={onClose}><div style={{background:"#fff",borderRadius:16,padding:28,width:480,maxWidth:"92vw",maxHeight:"85vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}><h2 style={{fontSize:18,fontWeight:600,marginBottom:18}}>{title}</h2>{children}</div></div>}
+function RP({role}){const c={admin:["#E8F8FC","#0077B6"],accountant:["#FEF3E8","#D46A1A"],manager:["#EDE9FE","#7C3AED"],pharmacist:["#F0FDF4","#16A34A"]};const[bg,fg]=c[role]||c.pharmacist;return<span style={{fontSize:10,fontWeight:600,textTransform:"uppercase",padding:"2px 6px",borderRadius:4,background:bg,color:fg}}>{role}</span>}
+function Th({children}){return<th style={{textAlign:"left",padding:"10px 16px",fontSize:10,color:"#9AABB8",textTransform:"uppercase",letterSpacing:.8,borderBottom:"1px solid #E4EBF0",fontWeight:600}}>{children}</th>}
+function Td({children,b}){return<td style={{padding:"10px 16px",fontSize:13,fontWeight:b?600:400}}>{children}</td>}
+function Card({label,value,accent,sub,sm}){return<div style={cardS}><div style={{...acS,background:accent}}/><div style={{fontSize:11,color:"#9AABB8",textTransform:"uppercase",letterSpacing:1,marginBottom:6,fontWeight:600}}>{label}</div><div style={{fontSize:sm?16:26,fontWeight:700,letterSpacing:sm?0:-1}}>{value}</div>{sub&&<div style={{fontSize:11,color:"#9AABB8",marginTop:4}}>{sub}</div>}</div>}
+
+function Dashboard({user,emps,entries,bt,et,branches}){
+  const isA=user.role==="admin";
+  const ph=emps.filter(e=>e.role==="pharmacist"&&(isA||e.bid===user.bid));
+  const sc=ph.map(p=>({e:p,...calcScore(p,entries,bt,et)}));
+  const sorted=[...sc].sort((a,b)=>b.total-a.total);
+  const avg=sc.length?Math.round(sc.reduce((s,x)=>s+x.total,0)/sc.length*10)/10:0;
+  const top=sorted[0];
+  const sales=entries.filter(e=>e.kid==="k1"&&(isA||emps.find(x=>x.id===e.eid)?.bid===user.bid)).reduce((s,e)=>s+e.v,0);
+  return<div>
+    <h1 style={{fontSize:26,fontWeight:500,marginBottom:4}}>{isA?"Overview Dashboard":"Branch Dashboard"}</h1>
+    <p style={{fontSize:13,color:"#6B7D8E",marginBottom:24}}>{MO}</p>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:14,marginBottom:24}}>
+      <Card label="Avg Score" value={avg+"%"} accent="#00B4D8"/>
+      <Card label="Sales" value={(sales/1000).toFixed(0)+"K"} accent="#F58634" sub="SAR"/>
+      <Card label="Active" value={ph.filter(p=>entries.some(e=>e.eid===p.id)).length+"/"+ph.length} accent="#22C55E"/>
+      {top&&<Card label="Top" value={top.e.name} accent="#F59E0B" sub={top.total+"%"} sm/>}
+    </div>
+    <div style={wrapS}><div style={headS}><b>Scoreboard</b></div>
+      <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",minWidth:700}}>
+        <thead><tr><Th>Name</Th><Th>Branch</Th>{KPIS.map(k=><Th key={k.id}>{k.name} ({k.w}%)</Th>)}<Th>Total</Th></tr></thead>
+        <tbody>{sorted.map(x=><tr key={x.e.id} style={{borderBottom:"1px solid #E4EBF0"}}>
+          <Td b>{x.e.name}</Td><Td>{branches.find(b=>b.id===x.e.bid)?.name}</Td>
+          {x.res.map((r,i)=><Td key={i}>{r.s!==null?<Pill type={r.s>=r.k.w?"success":r.s>=r.k.w*.7?"warn":"danger"}>{r.s}%</Pill>:<Pill>—</Pill>}</Td>)}
+          <Td><Pill type={x.total>=80?"success":x.total>=60?"warn":"danger"}>{x.total}%</Pill></Td>
+        </tr>)}</tbody>
+      </table></div>
+    </div>
+    {isA&&<div style={wrapS}><div style={headS}><b>Branch Sales</b></div><div style={{padding:"16px 20px"}}>{branches.filter(b=>entries.some(e=>e.bid===b.id&&e.kid==="k1")).map(br=>{
+      const s=entries.filter(e=>e.bid===br.id&&e.kid==="k1").reduce((a,e)=>a+e.v,0);
+      const t=(bt.find(x=>x.bid===br.id&&x.kid==="k1")||{}).v||1;
+      const p=Math.min((s/t)*100,120);
+      return<div key={br.id} style={{marginBottom:14}}><div style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:4}}><b>{br.name}</b><span style={{color:"#6B7D8E"}}>{(s/1000).toFixed(0)}K/{(t/1000).toFixed(0)}K</span></div>
+        <div style={{height:6,background:"#E4EBF0",borderRadius:3,overflow:"hidden"}}><div style={{height:6,borderRadius:3,width:Math.min(p,100)+"%",background:p>=90?"#22C55E":p>=70?"#F58634":"#EF4444"}}/></div></div>
+    })}</div></div>}
+  </div>;
+}
+
+function PharmDash({user,entries,bt,et,branches}){
+  const{res,total}=calcScore(user,entries,bt,et);
+  const sc=total>=90?"#22C55E":total>=70?"#F58634":"#EF4444";
+  return<div>
+    <h1 style={{fontSize:26,fontWeight:500,marginBottom:4}}>My Performance</h1>
+    <p style={{fontSize:13,color:"#6B7D8E",marginBottom:24}}>{MO} — {branches.find(b=>b.id===user.bid)?.name}</p>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:24}}>
+      <Card label="Score" value={total+"%"} accent={sc}/><Card label="Met" value={res.filter(r=>r.s!==null&&r.s>=r.k.w).length+"/"+res.filter(r=>r.s!==null).length} accent="#00B4D8"/>
+    </div>
+    <div style={wrapS}><div style={headS}><b>Breakdown</b></div><div style={{padding:"16px 20px"}}>{res.map((r,i)=>{
+      const pw=r.s!==null?Math.min((r.s/r.k.w)*100,150):0;
+      const bc=r.s===null?"#E4EBF0":r.s>=r.k.w?"#22C55E":r.s>=r.k.w*.7?"#F58634":"#EF4444";
+      return<div key={i} style={{marginBottom:16}}>
+        <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+          <div><b style={{fontSize:13}}>{r.k.name}</b> <Pill type="cyan">{r.k.w}%</Pill></div>
+          {r.s!==null?<Pill type={r.s>=r.k.w?"success":"warn"}>{r.s}%</Pill>:<Pill>—</Pill>}
+        </div>
+        <div style={{height:7,background:"#E4EBF0",borderRadius:4,overflow:"hidden"}}><div style={{height:7,borderRadius:4,width:Math.min(pw,100)+"%",background:bc}}/></div>
+      </div>
+    })}</div>
+    <div style={{padding:"12px 20px",borderTop:"1px solid #E4EBF0",display:"flex",justifyContent:"space-between"}}><b>Total</b><b style={{fontSize:18,color:sc}}>{total}%</b></div>
+    </div>
+  </div>;
+}
+
+function EntryPage({user,emps,entries,setEntries,branches,bt,et}){
+  const[se,setSe]=useState("");const[sm,setSm]=useState(MO);const[vals,setVals]=useState({});
+  const ph=emps.filter(e=>e.role==="pharmacist");const em=ph.find(e=>e.id===se);
+  const save=()=>{if(!se||!em)return;const n=Object.entries(vals).filter(([,v])=>v!=="").map(([kid,v])=>({eid:se,kid,bid:em.bid,v:Number(v),mo:sm,by:user.id}));setEntries(p=>[...p.filter(e=>!(e.eid===se&&e.mo===sm&&n.some(x=>x.kid===e.kid))),...n]);setVals({});};
+  return<div>
+    <h1 style={{fontSize:26,fontWeight:500,marginBottom:24}}>KPI Entry</h1>
+    <div style={{maxWidth:560}}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
+        <div><label style={LS}>Pharmacist</label><select value={se} onChange={e=>{setSe(e.target.value);setVals({})}} style={IS}><option value="">Select...</option>{ph.map(p=><option key={p.id} value={p.id}>{p.name} — {branches.find(b=>b.id===p.bid)?.name}</option>)}</select></div>
+        <div><label style={LS}>Month</label><input type="month" value={sm} onChange={e=>setSm(e.target.value)} style={IS}/></div>
+      </div>
+      {em&&KPIS.map(k=>{const ex=entries.find(e=>e.eid===se&&e.kid===k.id&&e.mo===sm);
+        let tl="";if(k.tl==="branch"){const t=bt.find(x=>x.bid===em.bid&&x.kid===k.id);tl=t?"Target: "+t.v.toLocaleString():"No target";}
+        else if(k.tl==="pharmacist"){const t=et.find(x=>x.eid===em.id&&x.kid===k.id);tl=t?"Target: "+t.v.toLocaleString():"No target";}
+        else if(k.tl==="fixed")tl="Target: "+k.ft+"%";
+        if(k.code==="expire")tl="≤1.5% of sales";
+        return<div key={k.id} style={{background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:14,marginBottom:10}}>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><div><b style={{fontSize:13}}>{k.name}</b> <Pill type="cyan">{k.w}%</Pill></div><span style={{fontSize:11,color:"#9AABB8"}}>{tl}</span></div>
+          <input type="number" placeholder={ex?"Current: "+ex.v:"Enter..."} value={vals[k.id]||""} onChange={e=>setVals({...vals,[k.id]:e.target.value})} style={IS}/>
+        </div>})}
+      {em&&<button onClick={save} style={BS}>Save</button>}
+    </div>
+  </div>;
+}
+
+function AcctLog({user,entries,emps,branches}){const my=entries.filter(e=>e.by===user.id);return<div><h1 style={{fontSize:26,fontWeight:500,marginBottom:24}}>My Entries</h1>{my.length===0?<p style={{color:"#9AABB8",textAlign:"center",padding:40}}>No entries yet</p>:<div style={wrapS}><table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr><Th>Month</Th><Th>Pharmacist</Th><Th>Branch</Th><Th>KPI</Th><Th>Value</Th></tr></thead><tbody>{my.map((e,i)=><tr key={i} style={{borderBottom:"1px solid #E4EBF0"}}><Td>{e.mo}</Td><Td>{emps.find(x=>x.id===e.eid)?.name}</Td><Td>{branches.find(b=>b.id===e.bid)?.name}</Td><Td>{KPIS.find(k=>k.id===e.kid)?.name}</Td><Td b>{e.v.toLocaleString()}</Td></tr>)}</tbody></table></div>}</div>}
+
+function EmpsPage({emps,setEmps,branches}){const[show,setShow]=useState(false);const[f,setF]=useState({name:"",role:"pharmacist",bid:BRANCHES[0].id});
+  const add=()=>{if(!f.name)return;setEmps(p=>[...p,{id:"e"+Date.now(),...f,email:"",active:true}]);setF({name:"",role:"pharmacist",bid:BRANCHES[0].id});setShow(false);};
+  return<div><div style={{display:"flex",justifyContent:"space-between",marginBottom:24}}><h1 style={{fontSize:26,fontWeight:500}}>Employees</h1><button onClick={()=>setShow(true)} style={BS}>+ Add</button></div>
+    <div style={wrapS}><table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr><Th>Name</Th><Th>Role</Th><Th>Branch</Th><Th>Status</Th><Th>Action</Th></tr></thead>
+      <tbody>{emps.map(e=><tr key={e.id} style={{borderBottom:"1px solid #E4EBF0"}}><Td b>{e.name}</Td><Td><RP role={e.role}/></Td><Td>{branches.find(b=>b.id===e.bid)?.name||"All"}</Td><Td><Pill type={e.active?"success":"danger"}>{e.active?"Active":"Off"}</Pill></Td><Td><button onClick={()=>setEmps(p=>p.map(x=>x.id===e.id?{...x,active:!x.active}:x))} style={{...BG,fontSize:11,padding:"4px 10px"}}>{e.active?"Deactivate":"Activate"}</button></Td></tr>)}</tbody></table></div>
+    <Modal open={show} onClose={()=>setShow(false)} title="Add Employee">
+      <div style={{marginBottom:14}}><label style={LS}>Name</label><input value={f.name} onChange={e=>setF({...f,name:e.target.value})} style={IS}/></div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
+        <div><label style={LS}>Role</label><select value={f.role} onChange={e=>setF({...f,role:e.target.value})} style={IS}><option value="pharmacist">Pharmacist</option><option value="manager">Manager</option><option value="accountant">Accountant</option><option value="admin">Admin</option></select></div>
+        <div><label style={LS}>Branch</label><select value={f.bid} onChange={e=>setF({...f,bid:e.target.value})} style={IS}><option value="">None</option>{branches.map(b=><option key={b.id} value={b.id}>{b.name}</option>)}</select></div>
+      </div>
+      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setShow(false)} style={BG}>Cancel</button><button onClick={add} style={BS}>Add</button></div>
+    </Modal>
+  </div>;
+}
+
+function MsgsPage({user,emps,anns,setAnns,dms,setDms}){
+  const[tab,setTab]=useState("ann");const[showA,setShowA]=useState(false);const[showD,setShowD]=useState(false);
+  const[af,setAf]=useState({title:"",body:"",pri:"normal",wa:false});
+  const[df,setDf]=useState({rid:"",body:""});
+  const sendA=()=>{if(!af.title||!af.body)return;setAnns(p=>[{id:"a"+Date.now(),sid:user.id,...af,tt:"all",at:new Date().toISOString()},...p]);setAf({title:"",body:"",pri:"normal",wa:false});setShowA(false);};
+  const sendD=()=>{if(!df.body||!df.rid)return;setDms(p=>[...p,{id:"dm"+Date.now(),sid:user.id,...df,read:false,at:new Date().toISOString()}]);setDf({rid:"",body:""});setShowD(false);};
+  return<div>
+    <div style={{display:"flex",justifyContent:"space-between",marginBottom:24}}><h1 style={{fontSize:26,fontWeight:500}}>Messages</h1><div style={{display:"flex",gap:8}}><button onClick={()=>setShowD(true)} style={BG}>Message</button>{user.role==="admin"&&<button onClick={()=>setShowA(true)} style={BS}>+ Announce</button>}</div></div>
+    <div style={{display:"flex",gap:4,marginBottom:20,background:"#fff",borderRadius:10,padding:4,border:"1px solid #E4EBF0",width:"fit-content"}}>
+      <button onClick={()=>setTab("ann")} style={{...TS,background:tab==="ann"?"linear-gradient(135deg,#00B4D8,#0077B6)":"transparent",color:tab==="ann"?"#fff":"#6B7D8E"}}>Announcements</button>
+      <button onClick={()=>setTab("dm")} style={{...TS,background:tab==="dm"?"linear-gradient(135deg,#00B4D8,#0077B6)":"transparent",color:tab==="dm"?"#fff":"#6B7D8E"}}>Direct</button>
+    </div>
+    {tab==="ann"&&anns.map(a=><div key={a.id} style={{background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:"14px 18px",marginBottom:10,borderLeft:a.pri==="urgent"?"3px solid #EF4444":""}}>
+      <div style={{fontSize:11,color:"#9AABB8",marginBottom:6,display:"flex",gap:6,flexWrap:"wrap"}}><b style={{color:"#6B7D8E"}}>{emps.find(e=>e.id===a.sid)?.name}</b>· {tAgo(a.at)} <Pill type="cyan">All</Pill>{a.pri==="urgent"&&<Pill type="danger">Urgent</Pill>}{a.wa&&<Pill type="success">WA</Pill>}</div>
+      <div style={{fontWeight:600,fontSize:14,marginBottom:4}}>{a.title}</div><div style={{fontSize:13,color:"#6B7D8E"}}>{a.body}</div>
+    </div>)}
+    {tab==="dm"&&dms.filter(d=>d.sid===user.id||d.rid===user.id).map(d=><div key={d.id} style={{background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:"14px 18px",marginBottom:10}}>
+      <div style={{fontSize:11,color:"#9AABB8",marginBottom:4}}><b style={{color:"#6B7D8E"}}>{d.sid===user.id?"To":"From"}: {emps.find(e=>e.id===(d.sid===user.id?d.rid:d.sid))?.name}</b> · {tAgo(d.at)}</div>
+      <div style={{fontSize:13,color:"#6B7D8E"}}>{d.body}</div>
+    </div>)}
+    <Modal open={showA} onClose={()=>setShowA(false)} title="Announcement">
+      <div style={{marginBottom:14}}><label style={LS}>Title</label><input value={af.title} onChange={e=>setAf({...af,title:e.target.value})} style={IS}/></div>
+      <div style={{marginBottom:14}}><label style={LS}>Body</label><textarea value={af.body} onChange={e=>setAf({...af,body:e.target.value})} style={{...IS,minHeight:80}}/></div>
+      <div style={{display:"flex",gap:12,fontSize:12,marginBottom:14}}><label><input type="checkbox" checked={af.pri==="urgent"} onChange={e=>setAf({...af,pri:e.target.checked?"urgent":"normal"})}/> Urgent</label><label><input type="checkbox" checked={af.wa} onChange={e=>setAf({...af,wa:e.target.checked})}/> WhatsApp</label></div>
+      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setShowA(false)} style={BG}>Cancel</button><button onClick={sendA} style={BS}>Send</button></div>
+    </Modal>
+    <Modal open={showD} onClose={()=>setShowD(false)} title="Message">
+      <div style={{marginBottom:14}}><label style={LS}>To</label><select value={df.rid} onChange={e=>setDf({...df,rid:e.target.value})} style={IS}><option value="">Select...</option>{emps.filter(e=>e.id!==user.id).map(e=><option key={e.id} value={e.id}>{e.name}</option>)}</select></div>
+      <div style={{marginBottom:14}}><label style={LS}>Message</label><textarea value={df.body} onChange={e=>setDf({...df,body:e.target.value})} style={{...IS,minHeight:60}}/></div>
+      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setShowD(false)} style={BG}>Cancel</button><button onClick={sendD} style={BS}>Send</button></div>
+    </Modal>
+  </div>;
+}
+
+function TasksPage({user,emps,tasks,setTasks}){
+  const[show,setShow]=useState(false);const[f,setF]=useState({title:"",desc:"",tt:"all_branches",te:"",due:"",wa:false});
+  const add=()=>{if(!f.title)return;setTasks(p=>[{id:"t"+Date.now(),by:user.id,...f,te:f.tt==="employee"?f.te:null,at2:f.tt==="employee"?f.te:null,done:false,db:null,cat:new Date().toISOString()},...p]);setF({title:"",desc:"",tt:"all_branches",te:"",due:"",wa:false});setShow(false);};
+  const tog=id=>setTasks(p=>p.map(t=>t.id===id?{...t,done:!t.done,db:t.done?null:user.id}:t));
+  const my=tasks.filter(t=>user.role==="admin"||t.tt==="all_branches"||t.te===user.id||t.at2===user.id);
+  return<div>
+    <div style={{display:"flex",justifyContent:"space-between",marginBottom:24}}><div><h1 style={{fontSize:26,fontWeight:500}}>Tasks</h1><p style={{fontSize:13,color:"#6B7D8E"}}>{my.filter(t=>!t.done).length} pending</p></div>{user.role==="admin"&&<button onClick={()=>setShow(true)} style={BS}>+ Task</button>}</div>
+    {my.filter(t=>!t.done).map(t=><div key={t.id} style={{background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:"14px 18px",marginBottom:10,display:"flex",gap:12}}>
+      <div onClick={()=>tog(t.id)} style={{width:22,height:22,borderRadius:6,border:"2px solid #D0DAE2",cursor:"pointer",flexShrink:0,marginTop:2}}/>
+      <div><div style={{fontWeight:600,fontSize:14}}>{t.title}</div>{t.desc&&<div style={{fontSize:12,color:"#6B7D8E",marginTop:2}}>{t.desc}</div>}
+        <div style={{display:"flex",gap:6,marginTop:6,flexWrap:"wrap"}}><Pill type={t.tt==="all_branches"?"cyan":"orange"}>{t.tt==="all_branches"?"All":emps.find(e=>e.id===t.te)?.name}</Pill>{t.due&&<Pill>{t.due}</Pill>}{t.wa&&<Pill type="success">WA</Pill>}</div></div>
+    </div>)}
+    {my.some(t=>t.done)&&<div style={{fontSize:11,fontWeight:600,color:"#9AABB8",textTransform:"uppercase",letterSpacing:1,margin:"16px 0 8px"}}>Done</div>}
+    {my.filter(t=>t.done).map(t=><div key={t.id} style={{background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:"14px 18px",marginBottom:10,display:"flex",gap:12,opacity:.5}}>
+      <div onClick={()=>tog(t.id)} style={{width:22,height:22,borderRadius:6,border:"2px solid #22C55E",background:"#22C55E",cursor:"pointer",flexShrink:0,marginTop:2,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700}}>✓</div>
+      <div><div style={{fontWeight:600,fontSize:14,textDecoration:"line-through"}}>{t.title}</div></div>
+    </div>)}
+    <Modal open={show} onClose={()=>setShow(false)} title="New Task">
+      <div style={{marginBottom:14}}><label style={LS}>Title</label><input value={f.title} onChange={e=>setF({...f,title:e.target.value})} style={IS}/></div>
+      <div style={{marginBottom:14}}><label style={LS}>Description</label><textarea value={f.desc} onChange={e=>setF({...f,desc:e.target.value})} style={{...IS,minHeight:60}}/></div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
+        <div><label style={LS}>Assign</label><select value={f.tt} onChange={e=>setF({...f,tt:e.target.value})} style={IS}><option value="all_branches">All</option><option value="employee">Employee</option></select></div>
+        {f.tt==="employee"&&<div><label style={LS}>Who</label><select value={f.te} onChange={e=>setF({...f,te:e.target.value})} style={IS}><option value="">Select...</option>{emps.map(e=><option key={e.id} value={e.id}>{e.name}</option>)}</select></div>}
+      </div>
+      <div style={{marginBottom:14}}><label style={LS}>Due</label><input type="date" value={f.due} onChange={e=>setF({...f,due:e.target.value})} style={IS}/></div>
+      <label style={{fontSize:12}}><input type="checkbox" checked={f.wa} onChange={e=>setF({...f,wa:e.target.checked})}/> WhatsApp</label>
+      <div style={{display:"flex",gap:8,justifyContent:"flex-end",marginTop:18}}><button onClick={()=>setShow(false)} style={BG}>Cancel</button><button onClick={add} style={BS}>Create</button></div>
+    </Modal>
+  </div>;
+}
+
+function FilesPage({user,branches}){
+  const my=I_FILES.filter(f=>user.role==="admin"||f.tt==="all"||(f.tt==="branch"&&f.tid===user.bid));
+  return<div><div style={{display:"flex",justifyContent:"space-between",marginBottom:24}}><h1 style={{fontSize:26,fontWeight:500}}>Files</h1>{user.role==="admin"&&<button style={BS}>+ Upload</button>}</div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:12}}>{my.map(f=><div key={f.id} style={{background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:"14px 18px",display:"flex",gap:12,alignItems:"center"}}>
+      <div style={{width:40,height:40,borderRadius:10,background:f.type==="pdf"?"#FEE2E2":"#DBEAFE",color:f.type==="pdf"?"#DC2626":"#2563EB",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:11}}>{f.type==="pdf"?"PDF":"IMG"}</div>
+      <div><div style={{fontWeight:600,fontSize:13}}>{f.name}</div>{f.desc&&<div style={{fontSize:11,color:"#6B7D8E"}}>{f.desc}</div>}<Pill type={f.tt==="all"?"cyan":"orange"}>{f.tt==="all"?"All":"Branch"}</Pill></div>
+    </div>)}</div>
+  </div>;
+}
+
+function SettingsPage({emps,branches,setBranches,bt,setBt,et,setEt,ap,setAp}){
+  const[tab,setTab]=useState("kpis");const[showAdd,setShowAdd]=useState(false);const[nb,setNb]=useState("");const[tm,setTm]=useState(MO);
+  const accts=emps.filter(e=>e.role==="accountant");const pharms=emps.filter(e=>e.role==="pharmacist");
+  const bK=KPIS.filter(k=>k.tl==="branch"&&k.code!=="expire");const eK=KPIS.filter(k=>k.tl==="pharmacist");
+  const addB=()=>{if(!nb)return;setBranches(p=>[...p,{id:"b"+Date.now(),name:nb}]);setNb("");setShowAdd(false);};
+  const uBT=(bid,kid,v)=>setBt(p=>{const i=p.findIndex(t=>t.bid===bid&&t.kid===kid&&t.mo===tm);if(i>=0){const n=[...p];n[i]={...n[i],v:Number(v)};return n;}return[...p,{bid,kid,v:Number(v),mo:tm}];});
+  const uET=(eid,kid,v)=>setEt(p=>{const i=p.findIndex(t=>t.eid===eid&&t.kid===kid&&t.mo===tm);if(i>=0){const n=[...p];n[i]={...n[i],v:Number(v)};return n;}return[...p,{eid,kid,v:Number(v),mo:tm}];});
+  const tP=(aid,kid)=>setAp(p=>p.some(x=>x.eid===aid&&x.kid===kid)?p.filter(x=>!(x.eid===aid&&x.kid===kid)):[...p,{id:"ap"+Date.now(),eid:aid,kid}]);
+  const tabs=[{id:"kpis",l:"KPIs"},{id:"bt",l:"Branch Targets"},{id:"et",l:"Emp Targets"},{id:"ap",l:"Accountant"},{id:"br",l:"Branches"}];
+  return<div>
+    <h1 style={{fontSize:26,fontWeight:500,marginBottom:20}}>Settings</h1>
+    <div style={{display:"flex",gap:4,marginBottom:20,background:"#fff",borderRadius:10,padding:4,border:"1px solid #E4EBF0",width:"fit-content",flexWrap:"wrap"}}>
+      {tabs.map(t=><button key={t.id} onClick={()=>setTab(t.id)} style={{...TS,background:tab===t.id?"linear-gradient(135deg,#00B4D8,#0077B6)":"transparent",color:tab===t.id?"#fff":"#6B7D8E"}}>{t.l}</button>)}
+    </div>
+    {tab==="kpis"&&<div style={wrapS}><div style={headS}><b>KPI Definitions</b><span style={{fontSize:11,color:"#9AABB8"}}>Total: {KPIS.reduce((s,k)=>s+k.w,0)}%</span></div><table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr><Th>KPI</Th><Th>Input</Th><Th>Weight</Th><Th>Target</Th><Th>Scoring</Th><Th>Cap</Th></tr></thead><tbody>{KPIS.map(k=><tr key={k.id} style={{borderBottom:"1px solid #E4EBF0"}}><Td b>{k.name}</Td><Td><Pill type={k.inp==="sar"?"success":k.inp==="pct"?"cyan":"orange"}>{k.inp.toUpperCase()}</Pill></Td><Td b>{k.w}%</Td><Td><Pill type={k.tl==="branch"?"orange":"cyan"}>{k.tl}</Pill></Td><Td>{k.st==="bin"?<Pill type="danger">Binary</Pill>:<Pill type="cyan">Proportional</Pill>}</Td><Td>{k.cap?<Pill type="warn">Capped</Pill>:<Pill type="success">No cap</Pill>}</Td></tr>)}</tbody></table></div>}
+    {tab==="bt"&&<div><div style={{marginBottom:16,maxWidth:200}}><label style={LS}>Month</label><input type="month" value={tm} onChange={e=>setTm(e.target.value)} style={IS}/></div><div style={wrapS}><div style={headS}><b>Sales Targets — {tm}</b></div><table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr><Th>Branch</Th>{bK.map(k=><Th key={k.id}>{k.name}</Th>)}</tr></thead><tbody>{branches.map(br=><tr key={br.id} style={{borderBottom:"1px solid #E4EBF0"}}><Td b>{br.name}</Td>{bK.map(k=>{const t=bt.find(x=>x.bid===br.id&&x.kid===k.id&&x.mo===tm);return<Td key={k.id}><input type="number" style={{...IS,width:130}} value={t?.v||""} placeholder="Set..." onChange={e=>uBT(br.id,k.id,e.target.value)}/></Td>})}</tr>)}</tbody></table></div></div>}
+    {tab==="et"&&<div><div style={{marginBottom:16,maxWidth:200}}><label style={LS}>Month</label><input type="month" value={tm} onChange={e=>setTm(e.target.value)} style={IS}/></div><div style={wrapS}><table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr><Th>Pharmacist</Th><Th>Branch</Th>{eK.map(k=><Th key={k.id}>{k.name}</Th>)}</tr></thead><tbody>{pharms.map(e=><tr key={e.id} style={{borderBottom:"1px solid #E4EBF0"}}><Td b>{e.name}</Td><Td>{branches.find(b=>b.id===e.bid)?.name}</Td>{eK.map(k=>{const t=et.find(x=>x.eid===e.id&&x.kid===k.id&&x.mo===tm);return<Td key={k.id}><input type="number" style={{...IS,width:100}} value={t?.v||""} placeholder="..." onChange={ev=>uET(e.id,k.id,ev.target.value)}/></Td>})}</tr>)}</tbody></table></div></div>}
+    {tab==="ap"&&<div>{accts.length===0?<p style={{color:"#9AABB8",textAlign:"center",padding:40}}>No accountants</p>:accts.map(ac=><div key={ac.id} style={wrapS}><div style={{...headS}}><b>{ac.name}</b><Pill type="orange">{ap.filter(p=>p.eid===ac.id).length}/{KPIS.length}</Pill></div><div style={{padding:16,display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:10}}>{KPIS.map(k=>{const has=ap.some(p=>p.eid===ac.id&&p.kid===k.id);return<label key={k.id} style={{display:"flex",gap:8,padding:"10px 12px",background:has?"#E8F8FC":"#F7F9FC",border:"1px solid "+(has?"#00B4D8":"#E4EBF0"),borderRadius:8,cursor:"pointer"}}><input type="checkbox" checked={has} onChange={()=>tP(ac.id,k.id)}/><div><div style={{fontWeight:600,fontSize:12}}>{k.name}</div><div style={{fontSize:10,color:"#9AABB8"}}>{k.w}%</div></div></label>})}</div></div>)}</div>}
+    {tab==="br"&&<div><button onClick={()=>setShowAdd(true)} style={{...BS,marginBottom:16}}>+ Branch</button><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12}}>{branches.map(br=><div key={br.id} style={cardS}><div style={{...acS,background:"linear-gradient(90deg,#00B4D8,#F58634)"}}/><b style={{fontSize:16}}>{br.name}</b><div style={{fontSize:12,color:"#6B7D8E"}}>{emps.filter(e=>e.bid===br.id).length} employees</div></div>)}</div><Modal open={showAdd} onClose={()=>setShowAdd(false)} title="Add Branch"><div style={{marginBottom:14}}><label style={LS}>Name</label><input value={nb} onChange={e=>setNb(e.target.value)} style={IS}/></div><div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setShowAdd(false)} style={BG}>Cancel</button><button onClick={addB} style={BS}>Add</button></div></Modal></div>}
+  </div>;
+}
+
+function LoginPage({onLogin,emps}){const[email,setEmail]=useState("");const[err,setErr]=useState("");
+  const go=()=>{const e=emps.find(x=>x.email===email);if(e){onLogin(e);setErr("");}else setErr("Not found. Try moamen@firstbrand.sa");};
+  return<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#F0FBFE,#FEF3E8)"}}>
+    <div style={{width:380,maxWidth:"92vw"}}><div style={{textAlign:"center",marginBottom:28}}>
+      <div style={{width:64,height:64,borderRadius:16,background:"linear-gradient(135deg,#00B4D8,#0077B6)",display:"inline-flex",alignItems:"center",justifyContent:"center",marginBottom:12}}><span style={{color:"#fff",fontSize:26,fontWeight:700}}>F</span></div>
+      <h1 style={{fontSize:22,color:"#0077B6"}}>First Brand Pharmacy</h1></div>
+      <div style={{background:"#fff",borderRadius:16,padding:24,boxShadow:"0 8px 24px rgba(0,0,0,.06)"}}>
+        <div style={{marginBottom:14}}><label style={LS}>Email</label><input type="email" value={email} onChange={e=>{setEmail(e.target.value);setErr("");}} onKeyDown={e=>e.key==="Enter"&&go()} style={{...IS,padding:12}} placeholder="name@firstbrand.sa"/></div>
+        <div style={{marginBottom:14}}><label style={LS}>Password</label><input type="password" style={{...IS,padding:12}} placeholder="••••••••"/></div>
+        {err&&<div style={{fontSize:12,color:"#EF4444",marginBottom:12,padding:8,background:"#FEF2F2",borderRadius:8}}>{err}</div>}
+        <button onClick={go} style={{...BS,width:"100%",padding:12,fontSize:14,justifyContent:"center"}}>Sign In</button>
+        <p style={{marginTop:14,fontSize:10,color:"#9AABB8",textAlign:"center"}}>Demo: moamen@ · sara@ · khalid@ · ahmed@ @firstbrand.sa</p>
+      </div>
+    </div>
+  </div>;
+}
+
+function App(){
+  const[loggedIn,setLoggedIn]=useState(true);
+  const[page,setPage]=useState("dashboard");
+  const[user,setUser]=useState(EMPS[0]);
+  const[emps,setEmps]=useState(EMPS);
+  const[entries,setEntries]=useState(I_EN);
+  const[anns,setAnns]=useState(I_ANN);
+  const[dms,setDms]=useState([]);
+  const[tasks,setTasks]=useState(I_TASKS);
+  const[branches,setBranches]=useState(BRANCHES);
+  const[bt,setBt]=useState(I_BT);
+  const[et,setEt]=useState(I_ET);
+  const[ap,setAp]=useState([{id:"ap1",eid:"e2",kid:"k1"},{id:"ap2",eid:"e2",kid:"k4"}]);
+
+  if(!loggedIn)return<LoginPage onLogin={e=>{setUser(e);setLoggedIn(true);setPage(e.role==="accountant"?"entry":"dashboard");}} emps={emps}/>;
+
+  const r=user.role;
+  const nav=[
+    {id:"dashboard",l:"Dashboard",show:r!=="accountant"},
+    {id:"entry",l:"KPI Entry",show:r==="admin"||r==="accountant"},
+    {id:"mylog",l:"My Entries",show:r==="accountant"},
+    {id:"emps",l:"Employees",show:r==="admin"},
+    {id:"tasks",l:"Tasks",show:r!=="accountant",badge:tasks.filter(t=>!t.done).length},
+    {id:"msgs",l:"Messages",show:r!=="accountant",badge:dms.filter(d=>d.rid===user.id&&!d.read).length},
+    {id:"files",l:"Files",show:r!=="accountant"},
+    {id:"settings",l:"Settings",show:r==="admin"}
+  ];
+
+  return<div style={{display:"flex",minHeight:"100vh"}}>
+    <div style={{width:240,minWidth:240,background:"#fff",borderRight:"1px solid #E4EBF0",display:"flex",flexDirection:"column",position:"sticky",top:0,height:"100vh"}}>
+      <div style={{padding:"20px 16px",borderBottom:"1px solid #E4EBF0",display:"flex",alignItems:"center",gap:10}}>
+        <div style={{width:40,height:40,borderRadius:10,background:"linear-gradient(135deg,#00B4D8,#0077B6)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:"#fff",fontSize:18,fontWeight:700}}>F</span></div>
+        <div><div style={{fontSize:15,fontWeight:600,color:"#0077B6"}}>First Brand</div><div style={{fontSize:9,color:"#F58634",fontWeight:600,letterSpacing:1.5,textTransform:"uppercase"}}>Pharmacy</div></div>
+      </div>
+      <div style={{flex:1,padding:10,display:"flex",flexDirection:"column",gap:2,overflowY:"auto"}}>
+        <div style={{fontSize:10,color:"#9AABB8",textTransform:"uppercase",letterSpacing:1.5,padding:"10px 10px 4px",fontWeight:600}}>Menu</div>
+        {nav.filter(n=>n.show).map(n=><div key={n.id} onClick={()=>setPage(n.id)} style={{padding:"9px 12px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:500,color:page===n.id?"#fff":"#6B7D8E",background:page===n.id?"linear-gradient(135deg,#00B4D8,#0077B6)":"transparent",display:"flex",alignItems:"center",gap:8}}>
+          {n.l}{n.badge>0&&<span style={{marginLeft:"auto",minWidth:16,height:16,borderRadius:8,fontSize:9,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",background:page===n.id?"rgba(255,255,255,.3)":"#EF4444",color:"#fff"}}>{n.badge}</span>}
+        </div>)}
+        <div style={{flex:1}}/>
+        <div onClick={()=>setLoggedIn(false)} style={{padding:"9px 12px",borderRadius:8,cursor:"pointer",fontSize:13,color:"#EF4444"}}>Sign Out</div>
+      </div>
+      <div style={{padding:"8px 10px",borderTop:"1px solid #E4EBF0"}}>
+        <div style={{fontSize:9,color:"#9AABB8",marginBottom:3,fontWeight:600,textTransform:"uppercase",letterSpacing:1}}>Demo</div>
+        <select value={user.id} onChange={e=>{const u=emps.find(x=>x.id===e.target.value);setUser(u);setPage(u.role==="accountant"?"entry":"dashboard");}} style={{...IS,fontSize:11,padding:"5px 8px"}}>{emps.map(e=><option key={e.id} value={e.id}>{e.name} ({e.role})</option>)}</select>
+      </div>
+      <div style={{padding:14,borderTop:"1px solid #E4EBF0",display:"flex",alignItems:"center",gap:10}}>
+        <div style={{width:32,height:32,borderRadius:8,background:r==="accountant"?"linear-gradient(135deg,#F58634,#D46A1A)":"linear-gradient(135deg,#00B4D8,#0077B6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"#fff"}}>{user.name[0]}</div>
+        <div><div style={{fontSize:12,fontWeight:600}}>{user.name}</div><RP role={r}/></div>
+      </div>
+    </div>
+    <div style={{flex:1,padding:"24px 28px",overflowY:"auto"}}>
+      {page==="dashboard"&&r==="pharmacist"&&<PharmDash user={user} entries={entries} bt={bt} et={et} branches={branches}/>}
+      {page==="dashboard"&&(r==="admin"||r==="manager")&&<Dashboard user={user} emps={emps} entries={entries} bt={bt} et={et} branches={branches}/>}
+      {page==="entry"&&<EntryPage user={user} emps={emps} entries={entries} setEntries={setEntries} branches={branches} bt={bt} et={et}/>}
+      {page==="mylog"&&<AcctLog user={user} entries={entries} emps={emps} branches={branches}/>}
+      {page==="emps"&&<EmpsPage emps={emps} setEmps={setEmps} branches={branches}/>}
+      {page==="tasks"&&<TasksPage user={user} emps={emps} tasks={tasks} setTasks={setTasks}/>}
+      {page==="msgs"&&<MsgsPage user={user} emps={emps} anns={anns} setAnns={setAnns} dms={dms} setDms={setDms}/>}
+      {page==="files"&&<FilesPage user={user} branches={branches}/>}
+      {page==="settings"&&<SettingsPage emps={emps} branches={branches} setBranches={setBranches} bt={bt} setBt={setBt} et={et} setEt={setEt} ap={ap} setAp={setAp}/>}
+    </div>
+  </div>;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
