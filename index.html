@@ -282,6 +282,7 @@ function MsgsPage({user,emps,anns,setAnns,dms,setDms}){
   const[tab,setTab]=useState("ann");const[showA,setShowA]=useState(false);const[showD,setShowD]=useState(false);
   const[af,setAf]=useState({title:"",body:"",pri:"normal",wa:false});
   const[df,setDf]=useState({rid:"",body:""});
+  const[delAnn,setDelAnn]=useState(null);
   const sendA=()=>{if(!af.title||!af.body)return;setAnns(p=>[{id:"a"+Date.now(),sid:user.id,...af,tt:"all",at:new Date().toISOString()},...p]);setAf({title:"",body:"",pri:"normal",wa:false});setShowA(false);};
   const sendD=()=>{if(!df.body||!df.rid)return;setDms(p=>[...p,{id:"dm"+Date.now(),sid:user.id,...df,read:false,at:new Date().toISOString()}]);setDf({rid:"",body:""});setShowD(false);};
   return<div>
@@ -291,13 +292,20 @@ function MsgsPage({user,emps,anns,setAnns,dms,setDms}){
       <button onClick={()=>setTab("dm")} style={{...TS,background:tab==="dm"?"linear-gradient(135deg,#00B4D8,#0077B6)":"transparent",color:tab==="dm"?"#fff":"#6B7D8E"}}>Direct</button>
     </div>
     {tab==="ann"&&anns.map(a=><div key={a.id} style={{background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:"14px 18px",marginBottom:10,borderLeft:a.pri==="urgent"?"3px solid #EF4444":""}}>
-      <div style={{fontSize:11,color:"#9AABB8",marginBottom:6,display:"flex",gap:6,flexWrap:"wrap"}}><b style={{color:"#6B7D8E"}}>{emps.find(e=>e.id===a.sid)?.name}</b>· {tAgo(a.at)} <Pill type="cyan">All</Pill>{a.pri==="urgent"&&<Pill type="danger">Urgent</Pill>}{a.wa&&<Pill type="success">WA</Pill>}</div>
-      <div style={{fontWeight:600,fontSize:14,marginBottom:4}}>{a.title}</div><div style={{fontSize:13,color:"#6B7D8E"}}>{a.body}</div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+        <div style={{flex:1}}>
+          <div style={{fontSize:11,color:"#9AABB8",marginBottom:6,display:"flex",gap:6,flexWrap:"wrap"}}><b style={{color:"#6B7D8E"}}>{emps.find(e=>e.id===a.sid)?.name}</b>· {tAgo(a.at)} <Pill type="cyan">All</Pill>{a.pri==="urgent"&&<Pill type="danger">Urgent</Pill>}{a.wa&&<Pill type="success">WA</Pill>}</div>
+          <div style={{fontWeight:600,fontSize:14,marginBottom:4}}>{a.title}</div><div style={{fontSize:13,color:"#6B7D8E"}}>{a.body}</div>
+        </div>
+        {user.role==="admin"&&<button onClick={()=>setDelAnn(a.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#EF4444",fontSize:16,padding:"4px 8px",opacity:.5,flexShrink:0}} title="Delete">✕</button>}
+      </div>
     </div>)}
     {tab==="dm"&&dms.filter(d=>d.sid===user.id||d.rid===user.id).map(d=><div key={d.id} style={{background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:"14px 18px",marginBottom:10}}>
       <div style={{fontSize:11,color:"#9AABB8",marginBottom:4}}><b style={{color:"#6B7D8E"}}>{d.sid===user.id?"To":"From"}: {emps.find(e=>e.id===(d.sid===user.id?d.rid:d.sid))?.name}</b> · {tAgo(d.at)}</div>
       <div style={{fontSize:13,color:"#6B7D8E"}}>{d.body}</div>
     </div>)}
+    {tab==="ann"&&anns.length===0&&<p style={{color:"#9AABB8",textAlign:"center",padding:40}}>No announcements</p>}
+    {tab==="dm"&&dms.filter(d=>d.sid===user.id||d.rid===user.id).length===0&&<p style={{color:"#9AABB8",textAlign:"center",padding:40}}>No messages yet</p>}
     <Modal open={showA} onClose={()=>setShowA(false)} title="Announcement">
       <div style={{marginBottom:14}}><label style={LS}>Title</label><input value={af.title} onChange={e=>setAf({...af,title:e.target.value})} style={IS}/></div>
       <div style={{marginBottom:14}}><label style={LS}>Body</label><textarea value={af.body} onChange={e=>setAf({...af,body:e.target.value})} style={{...IS,minHeight:80}}/></div>
@@ -309,26 +317,44 @@ function MsgsPage({user,emps,anns,setAnns,dms,setDms}){
       <div style={{marginBottom:14}}><label style={LS}>Message</label><textarea value={df.body} onChange={e=>setDf({...df,body:e.target.value})} style={{...IS,minHeight:60}}/></div>
       <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setShowD(false)} style={BG}>Cancel</button><button onClick={sendD} style={BS}>Send</button></div>
     </Modal>
+    <Modal open={!!delAnn} onClose={()=>setDelAnn(null)} title="Delete Announcement">
+      <p style={{fontSize:14,color:"#6B7D8E",marginBottom:16}}>Delete this announcement permanently?</p>
+      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setDelAnn(null)} style={BG}>Cancel</button><button onClick={()=>{setAnns(p=>p.filter(a=>a.id!==delAnn));setDelAnn(null);}} style={{...BS,background:"linear-gradient(135deg,#EF4444,#DC2626)"}}>Delete</button></div>
+    </Modal>
   </div>;
 }
 
 function TasksPage({user,emps,tasks,setTasks}){
-  const[show,setShow]=useState(false);const[f,setF]=useState({title:"",desc:"",tt:"all_branches",te:"",due:"",wa:false});
+  const[show,setShow]=useState(false);const[showDone,setShowDone]=useState(false);
+  const[f,setF]=useState({title:"",desc:"",tt:"all_branches",te:"",due:"",wa:false});
   const add=()=>{if(!f.title)return;setTasks(p=>[{id:"t"+Date.now(),by:user.id,...f,te:f.tt==="employee"?f.te:null,at2:f.tt==="employee"?f.te:null,done:false,db:null,cat:new Date().toISOString()},...p]);setF({title:"",desc:"",tt:"all_branches",te:"",due:"",wa:false});setShow(false);};
   const tog=id=>setTasks(p=>p.map(t=>t.id===id?{...t,done:!t.done,db:t.done?null:user.id}:t));
   const my=tasks.filter(t=>user.role==="admin"||t.tt==="all_branches"||t.te===user.id||t.at2===user.id);
+  const pending=[...my.filter(t=>!t.done)].sort((a,b)=>new Date(b.cat)-new Date(a.cat));
+  const done=[...my.filter(t=>t.done)].sort((a,b)=>new Date(b.cat)-new Date(a.cat));
   return<div>
-    <div style={{display:"flex",justifyContent:"space-between",marginBottom:24}}><div><h1 style={{fontSize:26,fontWeight:500}}>Tasks</h1><p style={{fontSize:13,color:"#6B7D8E"}}>{my.filter(t=>!t.done).length} pending</p></div>{user.role==="admin"&&<button onClick={()=>setShow(true)} style={BS}>+ Task</button>}</div>
-    {my.filter(t=>!t.done).map(t=><div key={t.id} style={{background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:"14px 18px",marginBottom:10,display:"flex",gap:12}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24}}>
+      <div><h1 style={{fontSize:26,fontWeight:500}}>Tasks</h1><p style={{fontSize:13,color:"#6B7D8E"}}>{pending.length} pending · {done.length} completed</p></div>
+      <div style={{display:"flex",gap:8}}>
+        <button onClick={()=>setShowDone(!showDone)} style={{...BG,background:showDone?"#E8F8FC":"transparent",color:showDone?"#0077B6":"#6B7D8E",borderColor:showDone?"#00B4D8":"#E4EBF0"}}>{showDone?"Hide":"Show"} completed ({done.length})</button>
+        {user.role==="admin"&&<button onClick={()=>setShow(true)} style={BS}>+ Task</button>}
+      </div>
+    </div>
+    {pending.length===0&&<p style={{color:"#9AABB8",textAlign:"center",padding:40}}>No pending tasks</p>}
+    {pending.map(t=><div key={t.id} style={{background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:"14px 18px",marginBottom:10,display:"flex",gap:12}}>
       <div onClick={()=>tog(t.id)} style={{width:22,height:22,borderRadius:6,border:"2px solid #D0DAE2",cursor:"pointer",flexShrink:0,marginTop:2}}/>
-      <div><div style={{fontWeight:600,fontSize:14}}>{t.title}</div>{t.desc&&<div style={{fontSize:12,color:"#6B7D8E",marginTop:2}}>{t.desc}</div>}
-        <div style={{display:"flex",gap:6,marginTop:6,flexWrap:"wrap"}}><Pill type={t.tt==="all_branches"?"cyan":"orange"}>{t.tt==="all_branches"?"All":emps.find(e=>e.id===t.te)?.name}</Pill>{t.due&&<Pill>{t.due}</Pill>}{t.wa&&<Pill type="success">WA</Pill>}</div></div>
+      <div style={{flex:1}}><div style={{fontWeight:600,fontSize:14}}>{t.title}</div>{t.desc&&<div style={{fontSize:12,color:"#6B7D8E",marginTop:2}}>{t.desc}</div>}
+        <div style={{display:"flex",gap:6,marginTop:6,flexWrap:"wrap"}}><Pill type={t.tt==="all_branches"?"cyan":"orange"}>{t.tt==="all_branches"?"All branches":emps.find(e=>e.id===t.te)?.name}</Pill>{t.due&&<Pill type={new Date(t.due)<new Date()?"danger":"gray"}>{t.due}</Pill>}{t.wa&&<Pill type="success">WA</Pill>}</div></div>
+      {user.role==="admin"&&<button onClick={()=>setTasks(p=>p.filter(x=>x.id!==t.id))} style={{background:"none",border:"none",cursor:"pointer",color:"#EF4444",fontSize:16,padding:"4px",opacity:.4,flexShrink:0}} title="Delete">✕</button>}
     </div>)}
-    {my.some(t=>t.done)&&<div style={{fontSize:11,fontWeight:600,color:"#9AABB8",textTransform:"uppercase",letterSpacing:1,margin:"16px 0 8px"}}>Done</div>}
-    {my.filter(t=>t.done).map(t=><div key={t.id} style={{background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:"14px 18px",marginBottom:10,display:"flex",gap:12,opacity:.5}}>
-      <div onClick={()=>tog(t.id)} style={{width:22,height:22,borderRadius:6,border:"2px solid #22C55E",background:"#22C55E",cursor:"pointer",flexShrink:0,marginTop:2,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700}}>✓</div>
-      <div><div style={{fontWeight:600,fontSize:14,textDecoration:"line-through"}}>{t.title}</div></div>
-    </div>)}
+    {showDone&&done.length>0&&<>
+      <div style={{fontSize:11,fontWeight:600,color:"#9AABB8",textTransform:"uppercase",letterSpacing:1,margin:"20px 0 10px"}}>Completed ({done.length})</div>
+      {done.map(t=><div key={t.id} style={{background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:"14px 18px",marginBottom:10,display:"flex",gap:12,opacity:.5}}>
+        <div onClick={()=>tog(t.id)} style={{width:22,height:22,borderRadius:6,border:"2px solid #22C55E",background:"#22C55E",cursor:"pointer",flexShrink:0,marginTop:2,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700}}>✓</div>
+        <div><div style={{fontWeight:600,fontSize:14,textDecoration:"line-through"}}>{t.title}</div>
+          <div style={{fontSize:11,color:"#9AABB8",marginTop:4}}>Done by {emps.find(e=>e.id===t.db)?.name}</div></div>
+      </div>)}
+    </>}
     <Modal open={show} onClose={()=>setShow(false)} title="New Task">
       <div style={{marginBottom:14}}><label style={LS}>Title</label><input value={f.title} onChange={e=>setF({...f,title:e.target.value})} style={IS}/></div>
       <div style={{marginBottom:14}}><label style={LS}>Description</label><textarea value={f.desc} onChange={e=>setF({...f,desc:e.target.value})} style={{...IS,minHeight:60}}/></div>
@@ -343,35 +369,93 @@ function TasksPage({user,emps,tasks,setTasks}){
   </div>;
 }
 
-function FilesPage({user,branches}){
-  const my=I_FILES.filter(f=>user.role==="admin"||f.tt==="all"||(f.tt==="branch"&&f.tid===user.bid));
-  return<div><div style={{display:"flex",justifyContent:"space-between",marginBottom:24}}><h1 style={{fontSize:26,fontWeight:500}}>Files</h1>{user.role==="admin"&&<button style={BS}>+ Upload</button>}</div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:12}}>{my.map(f=><div key={f.id} style={{background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:"14px 18px",display:"flex",gap:12,alignItems:"center"}}>
-      <div style={{width:40,height:40,borderRadius:10,background:f.type==="pdf"?"#FEE2E2":"#DBEAFE",color:f.type==="pdf"?"#DC2626":"#2563EB",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:11}}>{f.type==="pdf"?"PDF":"IMG"}</div>
-      <div><div style={{fontWeight:600,fontSize:13}}>{f.name}</div>{f.desc&&<div style={{fontSize:11,color:"#6B7D8E"}}>{f.desc}</div>}<Pill type={f.tt==="all"?"cyan":"orange"}>{f.tt==="all"?"All":"Branch"}</Pill></div>
-    </div>)}</div>
+function FilesPage({user,branches,files,setFiles,folders,setFolders}){
+  const[showFolder,setShowFolder]=useState(false);const[nf,setNf]=useState("");
+  const[curFolder,setCurFolder]=useState(null);
+  const my=files.filter(f=>user.role==="admin"||f.tt==="all"||(f.tt==="branch"&&f.tid===user.bid));
+  const myFolders=folders.filter(f=>f.parent===curFolder);
+  const myFiles=my.filter(f=>f.fid===curFolder);
+  const addFolder=()=>{if(!nf)return;setFolders(p=>[...p,{id:"fl"+Date.now(),name:nf,parent:curFolder}]);setNf("");setShowFolder(false);};
+  const breadcrumb=[];
+  let bc=curFolder;
+  while(bc){const fl=folders.find(f=>f.id===bc);if(fl){breadcrumb.unshift(fl);bc=fl.parent;}else break;}
+
+  return<div>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24}}>
+      <div><h1 style={{fontSize:26,fontWeight:500}}>File Stash</h1>
+        <div style={{display:"flex",gap:4,alignItems:"center",fontSize:13,color:"#6B7D8E",marginTop:4}}>
+          <span onClick={()=>setCurFolder(null)} style={{cursor:"pointer",color:curFolder?"#00B4D8":"#1A2B3C",fontWeight:curFolder?500:600}}>All Files</span>
+          {breadcrumb.map(f=><span key={f.id} style={{display:"flex",alignItems:"center",gap:4}}>
+            <span style={{color:"#D0DAE2"}}>/</span>
+            <span onClick={()=>setCurFolder(f.id)} style={{cursor:"pointer",color:f.id===curFolder?"#1A2B3C":"#00B4D8",fontWeight:f.id===curFolder?600:500}}>{f.name}</span>
+          </span>)}
+        </div>
+      </div>
+      {user.role==="admin"&&<div style={{display:"flex",gap:8}}>
+        <button onClick={()=>setShowFolder(true)} style={BG}>+ Folder</button>
+        <button onClick={()=>{const name=prompt("File name:");if(name)setFiles(p=>[...p,{id:"f"+Date.now(),name,type:name.endsWith(".pdf")?"pdf":"img",tt:"all",tid:null,desc:"",fid:curFolder}]);}} style={BS}>+ File</button>
+      </div>}
+    </div>
+
+    {myFolders.length>0&&<div style={{marginBottom:16}}>
+      <div style={{fontSize:11,fontWeight:600,color:"#9AABB8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Folders</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:10}}>
+        {myFolders.map(f=><div key={f.id} onClick={()=>setCurFolder(f.id)} style={{background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:"14px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:10,transition:"border-color .15s"}}>
+          <div style={{width:36,height:36,borderRadius:8,background:"linear-gradient(135deg,#E8F8FC,#FEF3E8)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>📁</div>
+          <div><div style={{fontWeight:600,fontSize:13}}>{f.name}</div>
+            <div style={{fontSize:11,color:"#9AABB8"}}>{files.filter(x=>x.fid===f.id).length} files</div></div>
+        </div>)}
+      </div>
+    </div>}
+
+    {myFiles.length>0&&<div>
+      <div style={{fontSize:11,fontWeight:600,color:"#9AABB8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Files</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:12}}>
+        {myFiles.map(f=><div key={f.id} style={{background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:"14px 18px",display:"flex",gap:12,alignItems:"center"}}>
+          <div style={{width:40,height:40,borderRadius:10,background:f.type==="pdf"?"#FEE2E2":"#DBEAFE",color:f.type==="pdf"?"#DC2626":"#2563EB",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:11}}>{f.type==="pdf"?"PDF":"IMG"}</div>
+          <div style={{flex:1}}><div style={{fontWeight:600,fontSize:13}}>{f.name}</div>{f.desc&&<div style={{fontSize:11,color:"#6B7D8E"}}>{f.desc}</div>}<Pill type={f.tt==="all"?"cyan":"orange"}>{f.tt==="all"?"All":"Branch"}</Pill></div>
+          {user.role==="admin"&&<button onClick={()=>setFiles(p=>p.filter(x=>x.id!==f.id))} style={{background:"none",border:"none",cursor:"pointer",color:"#EF4444",fontSize:14,opacity:.4}}>✕</button>}
+        </div>)}
+      </div>
+    </div>}
+
+    {myFolders.length===0&&myFiles.length===0&&<p style={{color:"#9AABB8",textAlign:"center",padding:40}}>{curFolder?"This folder is empty":"No files yet"}</p>}
+
+    <Modal open={showFolder} onClose={()=>setShowFolder(false)} title="New Folder">
+      <div style={{marginBottom:14}}><label style={LS}>Folder Name</label><input value={nf} onChange={e=>setNf(e.target.value)} style={IS} placeholder="e.g. SOPs, Training, Reports..."/></div>
+      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setShowFolder(false)} style={BG}>Cancel</button><button onClick={addFolder} style={BS}>Create</button></div>
+    </Modal>
   </div>;
 }
 
-function SettingsPage({emps,branches,setBranches,bt,setBt,et,setEt,ap,setAp}){
+function SettingsPage({emps,branches,setBranches,bt,setBt,et,setEt,ap,setAp,kpis,setKpis}){
   const[tab,setTab]=useState("kpis");const[showAdd,setShowAdd]=useState(false);const[nb,setNb]=useState("");const[tm,setTm]=useState(MO);
+  const[editKpi,setEditKpi]=useState(null);const[kw,setKw]=useState("");
   const accts=emps.filter(e=>e.role==="accountant");const pharms=emps.filter(e=>e.role==="pharmacist");
-  const bK=KPIS.filter(k=>k.tl==="branch"&&k.code!=="expire");const eK=KPIS.filter(k=>k.tl==="pharmacist");
+  const bK=kpis.filter(k=>k.tl==="branch"&&k.code!=="expire");const eK=kpis.filter(k=>k.tl==="pharmacist");
   const addB=()=>{if(!nb)return;setBranches(p=>[...p,{id:"b"+Date.now(),name:nb}]);setNb("");setShowAdd(false);};
   const uBT=(bid,kid,v)=>setBt(p=>{const i=p.findIndex(t=>t.bid===bid&&t.kid===kid&&t.mo===tm);if(i>=0){const n=[...p];n[i]={...n[i],v:Number(v)};return n;}return[...p,{bid,kid,v:Number(v),mo:tm}];});
   const uET=(eid,kid,v)=>setEt(p=>{const i=p.findIndex(t=>t.eid===eid&&t.kid===kid&&t.mo===tm);if(i>=0){const n=[...p];n[i]={...n[i],v:Number(v)};return n;}return[...p,{eid,kid,v:Number(v),mo:tm}];});
   const tP=(aid,kid)=>setAp(p=>p.some(x=>x.eid===aid&&x.kid===kid)?p.filter(x=>!(x.eid===aid&&x.kid===kid)):[...p,{id:"ap"+Date.now(),eid:aid,kid}]);
+  const saveWeight=()=>{if(editKpi&&kw!==""){setKpis(p=>p.map(k=>k.id===editKpi?{...k,w:Number(kw)}:k));setEditKpi(null);setKw("");}};
+  const totalW=kpis.reduce((s,k)=>s+k.w,0);
   const tabs=[{id:"kpis",l:"KPIs"},{id:"bt",l:"Branch Targets"},{id:"et",l:"Emp Targets"},{id:"ap",l:"Accountant"},{id:"br",l:"Branches"}];
   return<div>
     <h1 style={{fontSize:26,fontWeight:500,marginBottom:20}}>Settings</h1>
     <div style={{display:"flex",gap:4,marginBottom:20,background:"#fff",borderRadius:10,padding:4,border:"1px solid #E4EBF0",width:"fit-content",flexWrap:"wrap"}}>
       {tabs.map(t=><button key={t.id} onClick={()=>setTab(t.id)} style={{...TS,background:tab===t.id?"linear-gradient(135deg,#00B4D8,#0077B6)":"transparent",color:tab===t.id?"#fff":"#6B7D8E"}}>{t.l}</button>)}
     </div>
-    {tab==="kpis"&&<div style={wrapS}><div style={headS}><b>KPI Definitions</b><span style={{fontSize:11,color:"#9AABB8"}}>Total: {KPIS.reduce((s,k)=>s+k.w,0)}%</span></div><table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr><Th>KPI</Th><Th>Input</Th><Th>Weight</Th><Th>Target</Th><Th>Scoring</Th><Th>Cap</Th></tr></thead><tbody>{KPIS.map(k=><tr key={k.id} style={{borderBottom:"1px solid #E4EBF0"}}><Td b>{k.name}</Td><Td><Pill type={k.inp==="sar"?"success":k.inp==="pct"?"cyan":"orange"}>{k.inp.toUpperCase()}</Pill></Td><Td b>{k.w}%</Td><Td><Pill type={k.tl==="branch"?"orange":"cyan"}>{k.tl}</Pill></Td><Td>{k.st==="bin"?<Pill type="danger">Binary</Pill>:<Pill type="cyan">Proportional</Pill>}</Td><Td>{k.cap?<Pill type="warn">Capped</Pill>:<Pill type="success">No cap</Pill>}</Td></tr>)}</tbody></table></div>}
+    {tab==="kpis"&&<div style={wrapS}><div style={headS}><b>KPI Definitions</b><span style={{fontSize:11,color:totalW===100?"#22C55E":"#EF4444",fontWeight:600}}>Total: {totalW}% {totalW!==100&&"(should be 100%)"}</span></div><table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr><Th>KPI</Th><Th>Input</Th><Th>Weight</Th><Th>Target</Th><Th>Scoring</Th><Th>Cap</Th><Th>Edit</Th></tr></thead><tbody>{kpis.map(k=><tr key={k.id} style={{borderBottom:"1px solid #E4EBF0"}}><Td b>{k.name}</Td><Td><Pill type={k.inp==="sar"?"success":k.inp==="pct"?"cyan":"orange"}>{k.inp.toUpperCase()}</Pill></Td><Td b>{k.w}%</Td><Td><Pill type={k.tl==="branch"?"orange":"cyan"}>{k.tl}</Pill></Td><Td>{k.st==="bin"?<Pill type="danger">Binary</Pill>:<Pill type="cyan">Proportional</Pill>}</Td><Td>{k.cap?<Pill type="warn">Capped</Pill>:<Pill type="success">No cap</Pill>}</Td><Td><button onClick={()=>{setEditKpi(k.id);setKw(String(k.w));}} style={{...BG,fontSize:11,padding:"4px 10px",color:"#0077B6",borderColor:"#00B4D8"}}>Edit weight</button></Td></tr>)}</tbody></table></div>}
     {tab==="bt"&&<div><div style={{marginBottom:16,maxWidth:200}}><label style={LS}>Month</label><input type="month" value={tm} onChange={e=>setTm(e.target.value)} style={IS}/></div><div style={wrapS}><div style={headS}><b>Sales Targets — {tm}</b></div><table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr><Th>Branch</Th>{bK.map(k=><Th key={k.id}>{k.name}</Th>)}</tr></thead><tbody>{branches.map(br=><tr key={br.id} style={{borderBottom:"1px solid #E4EBF0"}}><Td b>{br.name}</Td>{bK.map(k=>{const t=bt.find(x=>x.bid===br.id&&x.kid===k.id&&x.mo===tm);return<Td key={k.id}><input type="number" style={{...IS,width:130}} value={t?.v||""} placeholder="Set..." onChange={e=>uBT(br.id,k.id,e.target.value)}/></Td>})}</tr>)}</tbody></table></div></div>}
     {tab==="et"&&<div><div style={{marginBottom:16,maxWidth:200}}><label style={LS}>Month</label><input type="month" value={tm} onChange={e=>setTm(e.target.value)} style={IS}/></div><div style={wrapS}><table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr><Th>Pharmacist</Th><Th>Branch</Th>{eK.map(k=><Th key={k.id}>{k.name}</Th>)}</tr></thead><tbody>{pharms.map(e=><tr key={e.id} style={{borderBottom:"1px solid #E4EBF0"}}><Td b>{e.name}</Td><Td>{branches.find(b=>b.id===e.bid)?.name}</Td>{eK.map(k=>{const t=et.find(x=>x.eid===e.id&&x.kid===k.id&&x.mo===tm);return<Td key={k.id}><input type="number" style={{...IS,width:100}} value={t?.v||""} placeholder="..." onChange={ev=>uET(e.id,k.id,ev.target.value)}/></Td>})}</tr>)}</tbody></table></div></div>}
-    {tab==="ap"&&<div>{accts.length===0?<p style={{color:"#9AABB8",textAlign:"center",padding:40}}>No accountants</p>:accts.map(ac=><div key={ac.id} style={wrapS}><div style={{...headS}}><b>{ac.name}</b><Pill type="orange">{ap.filter(p=>p.eid===ac.id).length}/{KPIS.length}</Pill></div><div style={{padding:16,display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:10}}>{KPIS.map(k=>{const has=ap.some(p=>p.eid===ac.id&&p.kid===k.id);return<label key={k.id} style={{display:"flex",gap:8,padding:"10px 12px",background:has?"#E8F8FC":"#F7F9FC",border:"1px solid "+(has?"#00B4D8":"#E4EBF0"),borderRadius:8,cursor:"pointer"}}><input type="checkbox" checked={has} onChange={()=>tP(ac.id,k.id)}/><div><div style={{fontWeight:600,fontSize:12}}>{k.name}</div><div style={{fontSize:10,color:"#9AABB8"}}>{k.w}%</div></div></label>})}</div></div>)}</div>}
+    {tab==="ap"&&<div>{accts.length===0?<p style={{color:"#9AABB8",textAlign:"center",padding:40}}>No accountants</p>:accts.map(ac=><div key={ac.id} style={wrapS}><div style={{...headS}}><b>{ac.name}</b><Pill type="orange">{ap.filter(p=>p.eid===ac.id).length}/{kpis.length}</Pill></div><div style={{padding:16,display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:10}}>{kpis.map(k=>{const has=ap.some(p=>p.eid===ac.id&&p.kid===k.id);return<label key={k.id} style={{display:"flex",gap:8,padding:"10px 12px",background:has?"#E8F8FC":"#F7F9FC",border:"1px solid "+(has?"#00B4D8":"#E4EBF0"),borderRadius:8,cursor:"pointer"}}><input type="checkbox" checked={has} onChange={()=>tP(ac.id,k.id)}/><div><div style={{fontWeight:600,fontSize:12}}>{k.name}</div><div style={{fontSize:10,color:"#9AABB8"}}>{k.w}%</div></div></label>})}</div></div>)}</div>}
     {tab==="br"&&<div><button onClick={()=>setShowAdd(true)} style={{...BS,marginBottom:16}}>+ Branch</button><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12}}>{branches.map(br=><div key={br.id} style={cardS}><div style={{...acS,background:"linear-gradient(90deg,#00B4D8,#F58634)"}}/><b style={{fontSize:16}}>{br.name}</b><div style={{fontSize:12,color:"#6B7D8E"}}>{emps.filter(e=>e.bid===br.id).length} employees</div></div>)}</div><Modal open={showAdd} onClose={()=>setShowAdd(false)} title="Add Branch"><div style={{marginBottom:14}}><label style={LS}>Name</label><input value={nb} onChange={e=>setNb(e.target.value)} style={IS}/></div><div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setShowAdd(false)} style={BG}>Cancel</button><button onClick={addB} style={BS}>Add</button></div></Modal></div>}
+    <Modal open={!!editKpi} onClose={()=>{setEditKpi(null);setKw("");}} title={"Edit Weight — "+(kpis.find(k=>k.id===editKpi)?.name||"")}>
+      <p style={{fontSize:13,color:"#6B7D8E",marginBottom:14}}>Current total weight: <b style={{color:totalW===100?"#22C55E":"#EF4444"}}>{totalW}%</b>. Changing this KPI from {kpis.find(k=>k.id===editKpi)?.w}% to:</p>
+      <div style={{marginBottom:14}}><label style={LS}>New Weight (%)</label><input type="number" value={kw} onChange={e=>setKw(e.target.value)} style={IS} min="0" max="100"/></div>
+      <p style={{fontSize:12,color:"#9AABB8",marginBottom:14}}>New total will be: <b>{totalW-(kpis.find(k=>k.id===editKpi)?.w||0)+Number(kw||0)}%</b></p>
+      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>{setEditKpi(null);setKw("");}} style={BG}>Cancel</button><button onClick={saveWeight} style={BS}>Save</button></div>
+    </Modal>
   </div>;
 }
 
@@ -397,6 +481,7 @@ function App(){
   const[page,setPage]=useState("dashboard");
   const[user,setUser]=useState(EMPS[0]);
   const[emps,setEmps]=useState(EMPS);
+  const[kpis,setKpis]=useState(KPIS);
   const[entries,setEntries]=useState(I_EN);
   const[anns,setAnns]=useState(I_ANN);
   const[dms,setDms]=useState([]);
@@ -405,17 +490,21 @@ function App(){
   const[bt,setBt]=useState(I_BT);
   const[et,setEt]=useState(I_ET);
   const[ap,setAp]=useState([{id:"ap1",eid:"e2",kid:"k1"},{id:"ap2",eid:"e2",kid:"k4"}]);
+  const[files,setFiles]=useState(I_FILES.map(f=>({...f,fid:null})));
+  const[folders,setFolders]=useState([{id:"fl1",name:"SOPs",parent:null},{id:"fl2",name:"Training",parent:null},{id:"fl3",name:"Reports",parent:null}]);
 
-  if(!loggedIn)return<LoginPage onLogin={e=>{setUser(e);setLoggedIn(true);setPage(e.role==="accountant"?"entry":"dashboard");}} emps={emps}/>;
+  const defPage=(role)=>role==="admin"?"dashboard":role==="accountant"?"entry":"msgs";
+
+  if(!loggedIn)return<LoginPage onLogin={e=>{setUser(e);setLoggedIn(true);setPage(defPage(e.role));}} emps={emps}/>;
 
   const r=user.role;
   const nav=[
+    {id:"msgs",l:"Messages",show:r!=="accountant",badge:dms.filter(d=>d.rid===user.id&&!d.read).length},
     {id:"dashboard",l:"Dashboard",show:r!=="accountant"},
     {id:"entry",l:"KPI Entry",show:r==="admin"||r==="accountant"},
     {id:"mylog",l:"My Entries",show:r==="accountant"},
     {id:"emps",l:"Employees",show:r==="admin"},
     {id:"tasks",l:"Tasks",show:r!=="accountant",badge:tasks.filter(t=>!t.done).length},
-    {id:"msgs",l:"Messages",show:r!=="accountant",badge:dms.filter(d=>d.rid===user.id&&!d.read).length},
     {id:"files",l:"Files",show:r!=="accountant"},
     {id:"settings",l:"Settings",show:r==="admin"}
   ];
@@ -436,7 +525,7 @@ function App(){
       </div>
       <div style={{padding:"8px 10px",borderTop:"1px solid #E4EBF0"}}>
         <div style={{fontSize:9,color:"#9AABB8",marginBottom:3,fontWeight:600,textTransform:"uppercase",letterSpacing:1}}>Demo</div>
-        <select value={user.id} onChange={e=>{const u=emps.find(x=>x.id===e.target.value);setUser(u);setPage(u.role==="accountant"?"entry":"dashboard");}} style={{...IS,fontSize:11,padding:"5px 8px"}}>{emps.map(e=><option key={e.id} value={e.id}>{e.name} ({e.role})</option>)}</select>
+        <select value={user.id} onChange={e=>{const u=emps.find(x=>x.id===e.target.value);setUser(u);setPage(defPage(u.role));}} style={{...IS,fontSize:11,padding:"5px 8px"}}>{emps.map(e=><option key={e.id} value={e.id}>{e.name} ({e.role})</option>)}</select>
       </div>
       <div style={{padding:14,borderTop:"1px solid #E4EBF0",display:"flex",alignItems:"center",gap:10}}>
         <div style={{width:32,height:32,borderRadius:8,background:r==="accountant"?"linear-gradient(135deg,#F58634,#D46A1A)":"linear-gradient(135deg,#00B4D8,#0077B6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"#fff"}}>{user.name[0]}</div>
@@ -451,8 +540,8 @@ function App(){
       {page==="emps"&&<EmpsPage emps={emps} setEmps={setEmps} branches={branches}/>}
       {page==="tasks"&&<TasksPage user={user} emps={emps} tasks={tasks} setTasks={setTasks}/>}
       {page==="msgs"&&<MsgsPage user={user} emps={emps} anns={anns} setAnns={setAnns} dms={dms} setDms={setDms}/>}
-      {page==="files"&&<FilesPage user={user} branches={branches}/>}
-      {page==="settings"&&<SettingsPage emps={emps} branches={branches} setBranches={setBranches} bt={bt} setBt={setBt} et={et} setEt={setEt} ap={ap} setAp={setAp}/>}
+      {page==="files"&&<FilesPage user={user} branches={branches} files={files} setFiles={setFiles} folders={folders} setFolders={setFolders}/>}
+      {page==="settings"&&<SettingsPage emps={emps} branches={branches} setBranches={setBranches} bt={bt} setBt={setBt} et={et} setEt={setEt} ap={ap} setAp={setAp} kpis={kpis} setKpis={setKpis}/>}
     </div>
   </div>;
 }
