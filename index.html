@@ -23,10 +23,21 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#F7F9FC;color:#1A
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
+// ═══════════════════════════════════════════
+// SUPABASE CONFIG — Fill these to enable live mode
+// Leave empty = demo mode with localStorage
+// ═══════════════════════════════════════════
+const SUPABASE_URL = "https://bgzwwpgwqsfybspnnjzu.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJnend3cGd3cXNmeWJzcG5uanp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NjA4NTUsImV4cCI6MjA5MTQzNjg1NX0.qeFE05mXvt8ZjZ8Xq5FrTO8ebKp9AsiwILm4ZHLtIQ8";
+
+const SB = (SUPABASE_URL && SUPABASE_KEY) ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+const LIVE = !!SB;
+
 const{useState}=React;
 
 const BRANCHES=[{id:"b1",name:"Sawarmah"},{id:"b2",name:"Maajer"},{id:"b3",name:"Sabya"},{id:"b4",name:"Kharish"},{id:"b5",name:"Makrmyah"},{id:"b6",name:"Dehmah"}];
@@ -203,7 +214,9 @@ function PharmDash({user,entries,bt,et,branches}){
 function EntryPage({user,emps,entries,setEntries,branches,bt,et}){
   const[se,setSe]=useState("");const[sm,setSm]=useState(MO);const[vals,setVals]=useState({});
   const ph=emps.filter(e=>e.role==="pharmacist");const em=ph.find(e=>e.id===se);
-  const save=()=>{if(!se||!em)return;const n=Object.entries(vals).filter(([,v])=>v!=="").map(([kid,v])=>({eid:se,kid,bid:em.bid,v:Number(v),mo:sm,by:user.id}));setEntries(p=>[...p.filter(e=>!(e.eid===se&&e.mo===sm&&n.some(x=>x.kid===e.kid))),...n]);setVals({});};
+  const save=async()=>{if(!se||!em)return;const n=Object.entries(vals).filter(([,v])=>v!=="").map(([kid,v])=>({eid:se,kid,bid:em.bid,v:Number(v),mo:sm,by:user.id}));setEntries(p=>[...p.filter(e=>!(e.eid===se&&e.mo===sm&&n.some(x=>x.kid===e.kid))),...n]);
+    if(LIVE){for(const en of n){await sbUpsert("kpi_entries",{employee_id:en.eid,kpi_id:en.kid,branch_id:en.bid,value:en.v,month:en.mo,entered_by:en.by},"employee_id,kpi_id,month");}}
+    setVals({});};
   return<div>
     <h1 style={{fontSize:26,fontWeight:500,marginBottom:24}}>KPI Entry</h1>
     <div style={{maxWidth:560}}>
@@ -237,17 +250,20 @@ function EmpsPage({emps,setEmps,branches}){
   const openAdd=()=>{setF(blank);setEditId(null);setShow(true);};
   const openEdit=(e)=>{setF({name:e.name,phone:e.phone||"",email:e.email||"",role:e.role,bid:e.bid||""});setEditId(e.id);setShow(true);};
 
-  const save=()=>{
+  const save=async()=>{
     if(!f.name)return;
     if(editId){
       setEmps(p=>p.map(x=>x.id===editId?{...x,...f}:x));
+      if(LIVE)await sbUpdate("employees",editId,{name:f.name,phone:f.phone,email:f.email,role:f.role,branch_id:f.bid||null});
     }else{
-      setEmps(p=>[...p,{id:"e"+Date.now(),...f,active:true}]);
+      const newId="e"+Date.now();
+      setEmps(p=>[...p,{id:newId,...f,active:true}]);
+      if(LIVE){const r=await sbInsert("employees",{name:f.name,phone:f.phone,email:f.email,role:f.role,branch_id:f.bid||null,is_active:true});if(r)setEmps(p=>p.map(x=>x.id===newId?{...mapEmp(r)}:x));}
     }
     setF(blank);setEditId(null);setShow(false);
   };
 
-  const confirmDel=()=>{setEmps(p=>p.filter(x=>x.id!==delId));setDelId(null);};
+  const confirmDel=async()=>{setEmps(p=>p.filter(x=>x.id!==delId));if(LIVE)await sbDelete("employees",delId);setDelId(null);};
 
   return<div>
     <div style={{display:"flex",justifyContent:"space-between",marginBottom:24}}><h1 style={{fontSize:26,fontWeight:500}}>Employees</h1><button onClick={openAdd} style={BS}>+ Add</button></div>
@@ -262,7 +278,7 @@ function EmpsPage({emps,setEmps,branches}){
         <Td>
           <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
             <button onClick={()=>openEdit(e)} style={{...BG,fontSize:11,padding:"4px 10px",color:"#0077B6",borderColor:"#00B4D8"}}>Edit</button>
-            <button onClick={()=>setEmps(p=>p.map(x=>x.id===e.id?{...x,active:!x.active}:x))} style={{...BG,fontSize:11,padding:"4px 10px"}}>{e.active?"Deactivate":"Activate"}</button>
+            <button onClick={async()=>{setEmps(p=>p.map(x=>x.id===e.id?{...x,active:!x.active}:x));if(LIVE)await sbUpdate("employees",e.id,{is_active:!e.active});}} style={{...BG,fontSize:11,padding:"4px 10px"}}>{e.active?"Deactivate":"Activate"}</button>
             <button onClick={()=>setDelId(e.id)} style={{...BG,fontSize:11,padding:"4px 10px",color:"#EF4444",borderColor:"#FCA5A5"}}>Delete</button>
           </div>
         </Td>
@@ -294,8 +310,12 @@ function MsgsPage({user,emps,anns,setAnns,dms,setDms}){
   const[af,setAf]=useState({title:"",body:"",pri:"normal",wa:false});
   const[df,setDf]=useState({rid:"",body:""});
   const[delAnn,setDelAnn]=useState(null);
-  const sendA=()=>{if(!af.title||!af.body)return;setAnns(p=>[{id:"a"+Date.now(),sid:user.id,...af,tt:"all",at:new Date().toISOString()},...p]);setAf({title:"",body:"",pri:"normal",wa:false});setShowA(false);};
-  const sendD=()=>{if(!df.body||!df.rid)return;setDms(p=>[...p,{id:"dm"+Date.now(),sid:user.id,...df,read:false,at:new Date().toISOString()}]);setDf({rid:"",body:""});setShowD(false);};
+  const sendA=async()=>{if(!af.title||!af.body)return;const a={id:"a"+Date.now(),sid:user.id,...af,tt:"all",at:new Date().toISOString()};setAnns(p=>[a,...p]);
+    if(LIVE)await sbInsert("announcements",{sender_id:user.id,title:af.title,body:af.body,target_type:"all",priority:af.pri,notify_whatsapp:af.wa});
+    setAf({title:"",body:"",pri:"normal",wa:false});setShowA(false);};
+  const sendD=async()=>{if(!df.body||!df.rid)return;const d={id:"dm"+Date.now(),sid:user.id,...df,read:false,at:new Date().toISOString()};setDms(p=>[...p,d]);
+    if(LIVE)await sbInsert("direct_messages",{sender_id:user.id,receiver_id:df.rid,body:df.body});
+    setDf({rid:"",body:""});setShowD(false);};
   return<div>
     <div style={{display:"flex",justifyContent:"space-between",marginBottom:24}}><h1 style={{fontSize:26,fontWeight:500}}>Messages</h1><div style={{display:"flex",gap:8}}><button onClick={()=>setShowD(true)} style={BG}>Message</button>{user.role==="admin"&&<button onClick={()=>setShowA(true)} style={BS}>+ Announce</button>}</div></div>
     <div style={{display:"flex",gap:4,marginBottom:20,background:"#fff",borderRadius:10,padding:4,border:"1px solid #E4EBF0",width:"fit-content"}}>
@@ -330,7 +350,7 @@ function MsgsPage({user,emps,anns,setAnns,dms,setDms}){
     </Modal>
     <Modal open={!!delAnn} onClose={()=>setDelAnn(null)} title="Delete Announcement">
       <p style={{fontSize:14,color:"#6B7D8E",marginBottom:16}}>Delete this announcement permanently?</p>
-      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setDelAnn(null)} style={BG}>Cancel</button><button onClick={()=>{setAnns(p=>p.filter(a=>a.id!==delAnn));setDelAnn(null);}} style={{...BS,background:"linear-gradient(135deg,#EF4444,#DC2626)"}}>Delete</button></div>
+      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setDelAnn(null)} style={BG}>Cancel</button><button onClick={async()=>{setAnns(p=>p.filter(a=>a.id!==delAnn));if(LIVE)await sbDelete("announcements",delAnn);setDelAnn(null);}} style={{...BS,background:"linear-gradient(135deg,#EF4444,#DC2626)"}}>Delete</button></div>
     </Modal>
   </div>;
 }
@@ -338,8 +358,11 @@ function MsgsPage({user,emps,anns,setAnns,dms,setDms}){
 function TasksPage({user,emps,tasks,setTasks}){
   const[show,setShow]=useState(false);const[showDone,setShowDone]=useState(false);
   const[f,setF]=useState({title:"",desc:"",tt:"all_branches",te:"",due:"",wa:false});
-  const add=()=>{if(!f.title)return;setTasks(p=>[{id:"t"+Date.now(),by:user.id,...f,te:f.tt==="employee"?f.te:null,at2:f.tt==="employee"?f.te:null,done:false,db:null,cat:new Date().toISOString()},...p]);setF({title:"",desc:"",tt:"all_branches",te:"",due:"",wa:false});setShow(false);};
-  const tog=id=>setTasks(p=>p.map(t=>t.id===id?{...t,done:!t.done,db:t.done?null:user.id}:t));
+  const add=async()=>{if(!f.title)return;const t={id:"t"+Date.now(),by:user.id,...f,te:f.tt==="employee"?f.te:null,at2:f.tt==="employee"?f.te:null,done:false,db:null,cat:new Date().toISOString()};setTasks(p=>[t,...p]);
+    if(LIVE)await sbInsert("tasks",{created_by:user.id,title:f.title,description:f.desc||null,target_type:f.tt,target_employee_id:f.tt==="employee"?f.te:null,assigned_to:f.tt==="employee"?f.te:null,due_date:f.due||null,notify_whatsapp:f.wa});
+    setF({title:"",desc:"",tt:"all_branches",te:"",due:"",wa:false});setShow(false);};
+  const tog=async(id)=>{const task=tasks.find(t=>t.id===id);setTasks(p=>p.map(t=>t.id===id?{...t,done:!t.done,db:t.done?null:user.id}:t));
+    if(LIVE)await sbUpdate("tasks",id,{is_done:!task.done,done_by:task.done?null:user.id,done_at:task.done?null:new Date().toISOString()});};
   const my=tasks.filter(t=>user.role==="admin"||t.tt==="all_branches"||t.te===user.id||t.at2===user.id);
   const pending=[...my.filter(t=>!t.done)].sort((a,b)=>new Date(b.cat)-new Date(a.cat));
   const done=[...my.filter(t=>t.done)].sort((a,b)=>new Date(b.cat)-new Date(a.cat));
@@ -356,7 +379,7 @@ function TasksPage({user,emps,tasks,setTasks}){
       <div onClick={()=>tog(t.id)} style={{width:22,height:22,borderRadius:6,border:"2px solid #D0DAE2",cursor:"pointer",flexShrink:0,marginTop:2}}/>
       <div style={{flex:1}}><div style={{fontWeight:600,fontSize:14}}>{t.title}</div>{t.desc&&<div style={{fontSize:12,color:"#6B7D8E",marginTop:2}}>{t.desc}</div>}
         <div style={{display:"flex",gap:6,marginTop:6,flexWrap:"wrap"}}><Pill type={t.tt==="all_branches"?"cyan":"orange"}>{t.tt==="all_branches"?"All branches":emps.find(e=>e.id===t.te)?.name}</Pill>{t.due&&<Pill type={new Date(t.due)<new Date()?"danger":"gray"}>{t.due}</Pill>}{t.wa&&<Pill type="success">WA</Pill>}</div></div>
-      {user.role==="admin"&&<button onClick={()=>setTasks(p=>p.filter(x=>x.id!==t.id))} style={{background:"none",border:"none",cursor:"pointer",color:"#EF4444",fontSize:16,padding:"4px",opacity:.4,flexShrink:0}} title="Delete">✕</button>}
+      {user.role==="admin"&&<button onClick={async()=>{setTasks(p=>p.filter(x=>x.id!==t.id));if(LIVE)await sbDelete("tasks",t.id);}} style={{background:"none",border:"none",cursor:"pointer",color:"#EF4444",fontSize:16,padding:"4px",opacity:.4,flexShrink:0}} title="Delete">✕</button>}
     </div>)}
     {showDone&&done.length>0&&<>
       <div style={{fontSize:11,fontWeight:600,color:"#9AABB8",textTransform:"uppercase",letterSpacing:1,margin:"20px 0 10px"}}>Completed ({done.length})</div>
@@ -386,7 +409,9 @@ function FilesPage({user,branches,files,setFiles,folders,setFolders}){
   const my=files.filter(f=>user.role==="admin"||f.tt==="all"||(f.tt==="branch"&&f.tid===user.bid));
   const myFolders=folders.filter(f=>f.parent===curFolder);
   const myFiles=my.filter(f=>f.fid===curFolder);
-  const addFolder=()=>{if(!nf)return;setFolders(p=>[...p,{id:"fl"+Date.now(),name:nf,parent:curFolder}]);setNf("");setShowFolder(false);};
+  const addFolder=async()=>{if(!nf)return;const fid="fl"+Date.now();setFolders(p=>[...p,{id:fid,name:nf,parent:curFolder}]);
+    if(LIVE){const r=await sbInsert("folders",{name:nf,parent_id:curFolder||null});if(r)setFolders(p=>p.map(x=>x.id===fid?{id:r.id,name:r.name,parent:r.parent_id}:x));}
+    setNf("");setShowFolder(false);};
   const breadcrumb=[];
   let bc=curFolder;
   while(bc){const fl=folders.find(f=>f.id===bc);if(fl){breadcrumb.unshift(fl);bc=fl.parent;}else break;}
@@ -404,7 +429,7 @@ function FilesPage({user,branches,files,setFiles,folders,setFolders}){
       </div>
       {user.role==="admin"&&<div style={{display:"flex",gap:8}}>
         <button onClick={()=>setShowFolder(true)} style={BG}>+ Folder</button>
-        <button onClick={()=>{const name=prompt("File name:");if(name)setFiles(p=>[...p,{id:"f"+Date.now(),name,type:name.endsWith(".pdf")?"pdf":"img",tt:"all",tid:null,desc:"",fid:curFolder}]);}} style={BS}>+ File</button>
+        <button onClick={async()=>{const name=prompt("File name:");if(name){const fid="f"+Date.now();setFiles(p=>[...p,{id:fid,name,type:name.endsWith(".pdf")?"pdf":"img",tt:"all",tid:null,desc:"",fid:curFolder}]);if(LIVE){const r=await sbInsert("files",{file_name:name,file_type:name.endsWith(".pdf")?"application/pdf":"image/png",target_type:"all",folder_id:curFolder||null});if(r)setFiles(p=>p.map(x=>x.id===fid?{id:r.id,name:r.file_name,type:r.file_type?.includes("pdf")?"pdf":"img",tt:r.target_type,tid:r.target_id,desc:r.description,fid:r.folder_id}:x));}}}} style={BS}>+ File</button>
       </div>}
     </div>
 
@@ -425,7 +450,7 @@ function FilesPage({user,branches,files,setFiles,folders,setFolders}){
         {myFiles.map(f=><div key={f.id} style={{background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:"14px 18px",display:"flex",gap:12,alignItems:"center"}}>
           <div style={{width:40,height:40,borderRadius:10,background:f.type==="pdf"?"#FEE2E2":"#DBEAFE",color:f.type==="pdf"?"#DC2626":"#2563EB",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:11}}>{f.type==="pdf"?"PDF":"IMG"}</div>
           <div style={{flex:1}}><div style={{fontWeight:600,fontSize:13}}>{f.name}</div>{f.desc&&<div style={{fontSize:11,color:"#6B7D8E"}}>{f.desc}</div>}<Pill type={f.tt==="all"?"cyan":"orange"}>{f.tt==="all"?"All":"Branch"}</Pill></div>
-          {user.role==="admin"&&<button onClick={()=>setFiles(p=>p.filter(x=>x.id!==f.id))} style={{background:"none",border:"none",cursor:"pointer",color:"#EF4444",fontSize:14,opacity:.4}}>✕</button>}
+          {user.role==="admin"&&<button onClick={async()=>{setFiles(p=>p.filter(x=>x.id!==f.id));if(LIVE)await sbDelete("files",f.id);}} style={{background:"none",border:"none",cursor:"pointer",color:"#EF4444",fontSize:14,opacity:.4}}>✕</button>}
         </div>)}
       </div>
     </div>}
@@ -444,11 +469,18 @@ function SettingsPage({emps,branches,setBranches,bt,setBt,et,setEt,ap,setAp,kpis
   const[editKpi,setEditKpi]=useState(null);const[kw,setKw]=useState("");
   const accts=emps.filter(e=>e.role==="accountant");const pharms=emps.filter(e=>e.role==="pharmacist");
   const bK=kpis.filter(k=>k.tl==="branch"&&k.code!=="expire");const eK=kpis.filter(k=>k.tl==="pharmacist");
-  const addB=()=>{if(!nb)return;setBranches(p=>[...p,{id:"b"+Date.now(),name:nb}]);setNb("");setShowAdd(false);};
-  const uBT=(bid,kid,v)=>setBt(p=>{const i=p.findIndex(t=>t.bid===bid&&t.kid===kid&&t.mo===tm);if(i>=0){const n=[...p];n[i]={...n[i],v:Number(v)};return n;}return[...p,{bid,kid,v:Number(v),mo:tm}];});
-  const uET=(eid,kid,v)=>setEt(p=>{const i=p.findIndex(t=>t.eid===eid&&t.kid===kid&&t.mo===tm);if(i>=0){const n=[...p];n[i]={...n[i],v:Number(v)};return n;}return[...p,{eid,kid,v:Number(v),mo:tm}];});
-  const tP=(aid,kid)=>setAp(p=>p.some(x=>x.eid===aid&&x.kid===kid)?p.filter(x=>!(x.eid===aid&&x.kid===kid)):[...p,{id:"ap"+Date.now(),eid:aid,kid}]);
-  const saveWeight=()=>{if(editKpi&&kw!==""){setKpis(p=>p.map(k=>k.id===editKpi?{...k,w:Number(kw)}:k));setEditKpi(null);setKw("");}};
+  const addB=async()=>{if(!nb)return;const bid="b"+Date.now();setBranches(p=>[...p,{id:bid,name:nb}]);
+    if(LIVE){const r=await sbInsert("branches",{name:nb});if(r)setBranches(p=>p.map(x=>x.id===bid?{id:r.id,name:r.name}:x));}
+    setNb("");setShowAdd(false);};
+  const uBT=async(bid,kid,v)=>{setBt(p=>{const i=p.findIndex(t=>t.bid===bid&&t.kid===kid&&t.mo===tm);if(i>=0){const n=[...p];n[i]={...n[i],v:Number(v)};return n;}return[...p,{bid,kid,v:Number(v),mo:tm}];});
+    if(LIVE)await sbUpsert("branch_targets",{branch_id:bid,kpi_id:kid,target_value:Number(v),month:tm},"branch_id,kpi_id,month");};
+  const uET=async(eid,kid,v)=>{setEt(p=>{const i=p.findIndex(t=>t.eid===eid&&t.kid===kid&&t.mo===tm);if(i>=0){const n=[...p];n[i]={...n[i],v:Number(v)};return n;}return[...p,{eid,kid,v:Number(v),mo:tm}];});
+    if(LIVE)await sbUpsert("employee_targets",{employee_id:eid,kpi_id:kid,target_value:Number(v),month:tm},"employee_id,kpi_id,month");};
+  const tP=async(aid,kid)=>{const has=ap.some(x=>x.eid===aid&&x.kid===kid);setAp(p=>has?p.filter(x=>!(x.eid===aid&&x.kid===kid)):[...p,{id:"ap"+Date.now(),eid:aid,kid}]);
+    if(LIVE){if(has){const rec=ap.find(x=>x.eid===aid&&x.kid===kid);if(rec)await sbDelete("accountant_permissions",rec.id);}else{await sbInsert("accountant_permissions",{employee_id:aid,kpi_id:kid});}}};
+  const saveWeight=async()=>{if(editKpi&&kw!==""){setKpis(p=>p.map(k=>k.id===editKpi?{...k,w:Number(kw)}:k));
+    if(LIVE)await sbUpdate("kpi_definitions",editKpi,{weight:Number(kw)});
+    setEditKpi(null);setKw("");}};
   const totalW=kpis.reduce((s,k)=>s+k.w,0);
   const tabs=[{id:"kpis",l:"KPIs"},{id:"bt",l:"Branch Targets"},{id:"et",l:"Emp Targets"},{id:"ap",l:"Accountant"},{id:"br",l:"Branches"}];
   return<div>
@@ -470,30 +502,57 @@ function SettingsPage({emps,branches,setBranches,bt,setBt,et,setEt,ap,setAp,kpis
   </div>;
 }
 
-function LoginPage({onLogin,emps}){const[email,setEmail]=useState("");const[err,setErr]=useState("");
-  const go=()=>{const e=emps.find(x=>x.email===email);if(e){onLogin(e);setErr("");}else setErr("Not found. Try moamen@firstbrand.sa");};
+function LoginPage({onLogin,live}){
+  const[email,setEmail]=useState("");const[pw,setPw]=useState("");const[err,setErr]=useState("");const[loading,setLoading]=useState(false);
+  const go=async()=>{setLoading(true);setErr("");const e=await onLogin(email,pw);if(e)setErr(e);setLoading(false);};
   return<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#F0FBFE,#FEF3E8)"}}>
     <div style={{width:380,maxWidth:"92vw"}}><div style={{textAlign:"center",marginBottom:28}}>
       <div style={{width:64,height:64,borderRadius:16,background:"linear-gradient(135deg,#00B4D8,#0077B6)",display:"inline-flex",alignItems:"center",justifyContent:"center",marginBottom:12}}><span style={{color:"#fff",fontSize:26,fontWeight:700}}>F</span></div>
-      <h1 style={{fontSize:22,color:"#0077B6"}}>First Brand Pharmacy</h1></div>
+      <h1 style={{fontSize:22,color:"#0077B6"}}>First Brand Pharmacy</h1>
+      <p style={{fontSize:11,color:live?"#22C55E":"#F58634",marginTop:6,fontWeight:600}}>{live?"● Live Mode":"● Demo Mode"}</p></div>
       <div style={{background:"#fff",borderRadius:16,padding:24,boxShadow:"0 8px 24px rgba(0,0,0,.06)"}}>
         <div style={{marginBottom:14}}><label style={LS}>Email</label><input type="email" value={email} onChange={e=>{setEmail(e.target.value);setErr("");}} onKeyDown={e=>e.key==="Enter"&&go()} style={{...IS,padding:12}} placeholder="name@firstbrand.sa"/></div>
-        <div style={{marginBottom:14}}><label style={LS}>Password</label><input type="password" style={{...IS,padding:12}} placeholder="••••••••"/></div>
+        <div style={{marginBottom:14}}><label style={LS}>Password</label><input type="password" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()} style={{...IS,padding:12}} placeholder="••••••••"/></div>
         {err&&<div style={{fontSize:12,color:"#EF4444",marginBottom:12,padding:8,background:"#FEF2F2",borderRadius:8}}>{err}</div>}
-        <button onClick={go} style={{...BS,width:"100%",padding:12,fontSize:14,justifyContent:"center"}}>Sign In</button>
-        <p style={{marginTop:14,fontSize:10,color:"#9AABB8",textAlign:"center"}}>Demo: moamen@ · sara@ · khalid@ · ahmed@ @firstbrand.sa</p>
+        <button onClick={go} disabled={loading} style={{...BS,width:"100%",padding:12,fontSize:14,justifyContent:"center",opacity:loading?.6:1}}>{loading?"Signing in...":"Sign In"}</button>
+        {!live&&<p style={{marginTop:14,fontSize:10,color:"#9AABB8",textAlign:"center"}}>Demo: moamen@ · sara@ · khalid@ · ahmed@ @firstbrand.sa (any password)</p>}
       </div>
     </div>
   </div>;
 }
 
-function App(){
-// localStorage helpers
-function loadState(key,fallback){try{const v=localStorage.getItem("fb_"+key);return v?JSON.parse(v):fallback;}catch(e){return fallback;}}
-function saveState(key,val){try{localStorage.setItem("fb_"+key,JSON.stringify(val));}catch(e){}}
+// ═══════════════════════════════════════════
+// DATABASE LAYER — Supabase when LIVE, localStorage fallback
+// ═══════════════════════════════════════════
+function loadState(key,fb){try{const v=localStorage.getItem("fb_"+key);return v?JSON.parse(v):fb;}catch(e){return fb;}}
+function saveState(key,v){try{localStorage.setItem("fb_"+key,JSON.stringify(v));}catch(e){}}
+
+// Supabase helpers
+async function sbLoad(table,filter){
+  if(!SB)return null;
+  let q=SB.from(table).select("*");
+  if(filter)q=filter(q);
+  const{data,error}=await q;
+  if(error){console.error("sbLoad",table,error);return null;}
+  return data;
+}
+async function sbInsert(table,row){if(!SB)return null;const{data,error}=await SB.from(table).insert(row).select();if(error)console.error("sbInsert",error);return data?.[0];}
+async function sbUpdate(table,id,vals){if(!SB)return;const{error}=await SB.from(table).update(vals).eq("id",id);if(error)console.error("sbUpdate",error);}
+async function sbDelete(table,id){if(!SB)return;const{error}=await SB.from(table).delete().eq("id",id);if(error)console.error("sbDelete",error);}
+async function sbUpsert(table,row,conflict){if(!SB)return null;const{data,error}=await SB.from(table).upsert(row,{onConflict:conflict}).select();if(error)console.error("sbUpsert",error);return data?.[0];}
+
+// Map Supabase data to app format
+function mapEmp(e){return{id:e.id,name:e.name,role:e.role,bid:e.branch_id,phone:e.phone,email:e.email,active:e.is_active};}
+function mapEntry(e){return{eid:e.employee_id,kid:e.kpi_id,bid:e.branch_id,v:e.value,mo:e.month,by:e.entered_by};}
+function mapBT(t){return{bid:t.branch_id,kid:t.kpi_id,v:t.target_value,mo:t.month};}
+function mapET(t){return{eid:t.employee_id,kid:t.kpi_id,v:t.target_value,mo:t.month};}
+function mapAnn(a){return{id:a.id,sid:a.sender_id,title:a.title,body:a.body,tt:a.target_type,pri:a.priority,wa:a.notify_whatsapp,at:a.created_at};}
+function mapTask(t){return{id:t.id,by:t.created_by,title:t.title,desc:t.description,tt:t.target_type,te:t.target_employee_id,at2:t.assigned_to,due:t.due_date,done:t.is_done,db:t.done_by,wa:t.notify_whatsapp,cat:t.created_at};}
+function mapDm(d){return{id:d.id,sid:d.sender_id,rid:d.receiver_id,body:d.body,read:d.is_read,at:d.created_at};}
 
 function App(){
-  const[loggedIn,setLoggedIn]=useState(()=>loadState("loggedIn",true));
+  const[loading,setLoading]=useState(LIVE);
+  const[loggedIn,setLoggedIn]=useState(()=>LIVE?false:loadState("loggedIn",true));
   const[page,setPage]=useState(()=>loadState("page","dashboard"));
   const[user,setUser]=useState(()=>loadState("user",EMPS[0]));
   const[emps,setEmps]=useState(()=>loadState("emps",EMPS));
@@ -510,26 +569,141 @@ function App(){
   const[folders,setFolders]=useState(()=>loadState("folders",[{id:"fl1",name:"SOPs",parent:null},{id:"fl2",name:"Training",parent:null},{id:"fl3",name:"Reports",parent:null}]));
   const[mobMenu,setMobMenu]=useState(false);
 
-  // Auto-save to localStorage
-  React.useEffect(()=>{saveState("loggedIn",loggedIn)},[loggedIn]);
+  // ── Supabase: check session + load data ──
+  React.useEffect(()=>{
+    if(!LIVE)return;
+    (async()=>{
+      // Check existing session
+      const{data:{session}}=await SB.auth.getSession();
+      if(session){
+        // Load employee profile
+        const{data:emp}=await SB.from("employees").select("*").eq("auth_id",session.user.id).single();
+        if(emp){
+          setUser(mapEmp(emp));
+          setLoggedIn(true);
+          // Load all data
+          const[brData,empData,kpiData,enData,btData,etData,annData,taskData,dmData,apData]=await Promise.all([
+            sbLoad("branches"),
+            sbLoad("employees"),
+            sbLoad("kpi_entries"),
+            sbLoad("branch_targets"),
+            sbLoad("employee_targets"),
+            sbLoad("announcements"),
+            sbLoad("tasks"),
+            sbLoad("direct_messages"),
+            sbLoad("accountant_permissions"),
+            sbLoad("kpi_definitions")
+          ]);
+          const[fileData,folderData]=await Promise.all([sbLoad("files"),sbLoad("folders")]);
+          if(brData)setBranches(brData.map(b=>({id:b.id,name:b.name})));
+          if(empData)setEmps(empData.map(mapEmp));
+          if(enData)setEntries(enData.map(mapEntry));
+          if(btData)setBt(btData.map(mapBT));
+          if(etData)setEt(etData.map(mapET));
+          if(annData)setAnns(annData.map(mapAnn));
+          if(taskData)setTasks(taskData.map(mapTask));
+          if(dmData)setDms(dmData.map(mapDm));
+          if(apData)setAp(apData.map(a=>({id:a.id,eid:a.employee_id,kid:a.kpi_id})));
+          if(fileData)setFiles(fileData.map(f=>({id:f.id,name:f.file_name,type:f.file_type?.includes("pdf")?"pdf":"img",tt:f.target_type,tid:f.target_id,desc:f.description,fid:f.folder_id})));
+          if(folderData)setFolders(folderData.map(f=>({id:f.id,name:f.name,parent:f.parent_id})));
+          if(kpiData)setKpis(kpiData.sort((a,b)=>a.sort_order-b.sort_order).map(k=>({
+            id:k.id,name:k.name,code:k.code,inp:k.input_type==="percent"?"pct":k.input_type,
+            w:Number(k.weight),tl:k.target_level,st:k.scoring_type==="binary"?"bin":"prop",
+            cap:k.is_capped,ft:k.fixed_target,bt:k.binary_threshold
+          })));
+          setPage(emp.role==="admin"?"dashboard":emp.role==="accountant"?"entry":"msgs");
+        }
+      }
+      setLoading(false);
+    })();
+
+    // Realtime subscriptions
+    const ch=SB.channel("realtime-all")
+      .on("postgres_changes",{event:"*",schema:"public",table:"kpi_entries"},()=>{
+        sbLoad("kpi_entries").then(d=>{if(d)setEntries(d.map(mapEntry));});
+      })
+      .on("postgres_changes",{event:"*",schema:"public",table:"announcements"},()=>{
+        sbLoad("announcements").then(d=>{if(d)setAnns(d.map(mapAnn));});
+      })
+      .on("postgres_changes",{event:"*",schema:"public",table:"direct_messages"},()=>{
+        sbLoad("direct_messages").then(d=>{if(d)setDms(d.map(mapDm));});
+      })
+      .on("postgres_changes",{event:"*",schema:"public",table:"tasks"},()=>{
+        sbLoad("tasks").then(d=>{if(d)setTasks(d.map(mapTask));});
+      })
+      .subscribe();
+    return()=>{SB.removeChannel(ch);};
+  },[]);
+
+  // ── localStorage auto-save (demo mode only) ──
+  React.useEffect(()=>{if(!LIVE)saveState("loggedIn",loggedIn)},[loggedIn]);
   React.useEffect(()=>{saveState("page",page)},[page]);
-  React.useEffect(()=>{saveState("user",user)},[user]);
-  React.useEffect(()=>{saveState("emps",emps)},[emps]);
-  React.useEffect(()=>{saveState("kpis",kpis)},[kpis]);
-  React.useEffect(()=>{saveState("entries",entries)},[entries]);
-  React.useEffect(()=>{saveState("anns",anns)},[anns]);
-  React.useEffect(()=>{saveState("dms",dms)},[dms]);
-  React.useEffect(()=>{saveState("tasks",tasks)},[tasks]);
-  React.useEffect(()=>{saveState("branches",branches)},[branches]);
-  React.useEffect(()=>{saveState("bt",bt)},[bt]);
-  React.useEffect(()=>{saveState("et",et)},[et]);
-  React.useEffect(()=>{saveState("ap",ap)},[ap]);
-  React.useEffect(()=>{saveState("files",files)},[files]);
-  React.useEffect(()=>{saveState("folders",folders)},[folders]);
+  React.useEffect(()=>{if(!LIVE)saveState("user",user)},[user]);
+  React.useEffect(()=>{if(!LIVE)saveState("emps",emps)},[emps]);
+  React.useEffect(()=>{if(!LIVE)saveState("kpis",kpis)},[kpis]);
+  React.useEffect(()=>{if(!LIVE)saveState("entries",entries)},[entries]);
+  React.useEffect(()=>{if(!LIVE)saveState("anns",anns)},[anns]);
+  React.useEffect(()=>{if(!LIVE)saveState("dms",dms)},[dms]);
+  React.useEffect(()=>{if(!LIVE)saveState("tasks",tasks)},[tasks]);
+  React.useEffect(()=>{if(!LIVE)saveState("branches",branches)},[branches]);
+  React.useEffect(()=>{if(!LIVE)saveState("bt",bt)},[bt]);
+  React.useEffect(()=>{if(!LIVE)saveState("et",et)},[et]);
+  React.useEffect(()=>{if(!LIVE)saveState("ap",ap)},[ap]);
+  React.useEffect(()=>{if(!LIVE)saveState("files",files)},[files]);
+  React.useEffect(()=>{if(!LIVE)saveState("folders",folders)},[folders]);
+
+  // ── Loading screen ──
+  if(loading)return<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#F7F9FC"}}>
+    <div style={{textAlign:"center"}}>
+      <div style={{width:56,height:56,borderRadius:14,background:"linear-gradient(135deg,#00B4D8,#0077B6)",display:"inline-flex",alignItems:"center",justifyContent:"center",marginBottom:16}}><span style={{color:"#fff",fontSize:22,fontWeight:700}}>F</span></div>
+      <p style={{color:"#6B7D8E",fontSize:14}}>Connecting to database...</p>
+    </div>
+  </div>;
 
   const defPage=(role)=>role==="admin"?"dashboard":role==="accountant"?"entry":"msgs";
 
-  if(!loggedIn)return<LoginPage onLogin={e=>{setUser(e);setLoggedIn(true);setPage(defPage(e.role));}} emps={emps}/>;
+  // ── Login handler ──
+  const handleLogin=async(email,password)=>{
+    if(LIVE){
+      const{data,error}=await SB.auth.signInWithPassword({email,password});
+      if(error)return error.message;
+      const{data:emp}=await SB.from("employees").select("*").eq("auth_id",data.user.id).single();
+      if(!emp)return"No employee profile linked to this account";
+      setUser(mapEmp(emp));
+      setLoggedIn(true);
+      // Reload all data
+      const[brD,empD,enD,btD,etD,annD,taskD,dmD,apD]=await Promise.all([
+        sbLoad("branches"),sbLoad("employees"),sbLoad("kpi_entries"),sbLoad("branch_targets"),
+        sbLoad("employee_targets"),sbLoad("announcements"),sbLoad("tasks"),sbLoad("direct_messages"),sbLoad("accountant_permissions")
+      ]);
+      const[fileD,folderD]=await Promise.all([sbLoad("files"),sbLoad("folders")]);
+      if(brD)setBranches(brD.map(b=>({id:b.id,name:b.name})));
+      if(empD)setEmps(empD.map(mapEmp));
+      if(enD)setEntries(enD.map(mapEntry));
+      if(btD)setBt(btD.map(mapBT));
+      if(etD)setEt(etD.map(mapET));
+      if(annD)setAnns(annD.map(mapAnn));
+      if(taskD)setTasks(taskD.map(mapTask));
+      if(dmD)setDms(dmD.map(mapDm));
+      if(apD)setAp(apD.map(a=>({id:a.id,eid:a.employee_id,kid:a.kpi_id})));
+      if(fileD)setFiles(fileD.map(f=>({id:f.id,name:f.file_name,type:f.file_type?.includes("pdf")?"pdf":"img",tt:f.target_type,tid:f.target_id,desc:f.description,fid:f.folder_id})));
+      if(folderD)setFolders(folderD.map(f=>({id:f.id,name:f.name,parent:f.parent_id})));
+      setPage(defPage(emp.role));
+      return null;
+    } else {
+      const emp=emps.find(x=>x.email===email);
+      if(!emp)return"Not found. Try moamen@firstbrand.sa";
+      setUser(emp);setLoggedIn(true);setPage(defPage(emp.role));
+      return null;
+    }
+  };
+
+  const handleLogout=async()=>{
+    if(LIVE)await SB.auth.signOut();
+    setLoggedIn(false);setMobMenu(false);
+  };
+
+  if(!loggedIn)return<LoginPage onLogin={handleLogin} live={LIVE}/>;
 
   const r=user.role;
   const nav=[
@@ -543,7 +717,7 @@ function App(){
     {id:"settings",l:"Settings",show:r==="admin"}
   ];
 
-  const resetData=()=>{if(confirm("Reset all data to demo defaults? This cannot be undone.")){
+  const resetData=()=>{if(confirm("Reset all data to demo defaults?")){
     ["loggedIn","page","user","emps","kpis","entries","anns","dms","tasks","branches","bt","et","ap","files","folders"].forEach(k=>localStorage.removeItem("fb_"+k));
     location.reload();
   }};
@@ -559,13 +733,14 @@ function App(){
         {n.l}{n.badge>0&&<span style={{marginLeft:"auto",minWidth:16,height:16,borderRadius:8,fontSize:9,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",background:page===n.id?"rgba(255,255,255,.3)":"#EF4444",color:"#fff"}}>{n.badge}</span>}
       </div>)}
       <div style={{flex:1}}/>
-      {r==="admin"&&<div onClick={resetData} style={{padding:"9px 12px",borderRadius:8,cursor:"pointer",fontSize:12,color:"#9AABB8"}}>Reset Demo Data</div>}
-      <div onClick={()=>{setLoggedIn(false);setMobMenu(false);}} style={{padding:"9px 12px",borderRadius:8,cursor:"pointer",fontSize:13,color:"#EF4444"}}>Sign Out</div>
+      <div style={{padding:"6px 12px",fontSize:10,color:LIVE?"#22C55E":"#F58634"}}>{LIVE?"● Connected to Supabase":"● Demo mode (localStorage)"}</div>
+      {!LIVE&&r==="admin"&&<div onClick={resetData} style={{padding:"9px 12px",borderRadius:8,cursor:"pointer",fontSize:12,color:"#9AABB8"}}>Reset Demo Data</div>}
+      <div onClick={handleLogout} style={{padding:"9px 12px",borderRadius:8,cursor:"pointer",fontSize:13,color:"#EF4444"}}>Sign Out</div>
     </div>
-    <div style={{padding:"8px 10px",borderTop:"1px solid #E4EBF0"}}>
+    {!LIVE&&<div style={{padding:"8px 10px",borderTop:"1px solid #E4EBF0"}}>
       <div style={{fontSize:9,color:"#9AABB8",marginBottom:3,fontWeight:600,textTransform:"uppercase",letterSpacing:1}}>Demo</div>
       <select value={user.id} onChange={e=>{const u=emps.find(x=>x.id===e.target.value);setUser(u);setPage(defPage(u.role));setMobMenu(false);}} style={{...IS,fontSize:11,padding:"5px 8px"}}>{emps.map(e=><option key={e.id} value={e.id}>{e.name} ({e.role})</option>)}</select>
-    </div>
+    </div>}
     <div style={{padding:14,borderTop:"1px solid #E4EBF0",display:"flex",alignItems:"center",gap:10}}>
       <div style={{width:32,height:32,borderRadius:8,background:r==="accountant"?"linear-gradient(135deg,#F58634,#D46A1A)":"linear-gradient(135deg,#00B4D8,#0077B6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"#fff"}}>{user.name[0]}</div>
       <div><div style={{fontSize:12,fontWeight:600}}>{user.name}</div><RP role={r}/></div>
@@ -585,29 +760,15 @@ function App(){
   </>;
 
   return<div style={{display:"flex",minHeight:"100vh"}}>
-    {/* Mobile header */}
     <div className="mobile-header" style={{display:"none",position:"fixed",top:0,left:0,right:0,height:56,background:"#fff",borderBottom:"1px solid #E4EBF0",zIndex:90,alignItems:"center",padding:"0 16px",gap:12}}>
       <div onClick={()=>setMobMenu(!mobMenu)} style={{width:36,height:36,borderRadius:8,background:"#F7F9FC",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:18}}>☰</div>
       <div style={{fontSize:15,fontWeight:600,color:"#0077B6",flex:1}}>First Brand</div>
       <div style={{width:28,height:28,borderRadius:6,background:"linear-gradient(135deg,#00B4D8,#0077B6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#fff"}}>{user.name[0]}</div>
     </div>
-
-    {/* Mobile overlay + sidebar */}
     {mobMenu&&<div className="mobile-overlay" onClick={()=>setMobMenu(false)} style={{display:"none",position:"fixed",inset:0,background:"rgba(0,0,0,.3)",zIndex:95}}/>}
-    {mobMenu&&<div className="sidebar-mobile" style={{position:"fixed",top:0,left:0,bottom:0,width:280,background:"#fff",zIndex:100,display:"flex",flexDirection:"column",boxShadow:"4px 0 20px rgba(0,0,0,.1)"}}>
-      {sidebarContent}
-    </div>}
-
-    {/* Desktop sidebar */}
-    <div className="sidebar-desktop" style={{width:240,minWidth:240,background:"#fff",borderRight:"1px solid #E4EBF0",display:"flex",flexDirection:"column",position:"sticky",top:0,height:"100vh"}}>
-      {sidebarContent}
-    </div>
-
-    {/* Main content */}
-    <div className="main-content" style={{flex:1,padding:"24px 28px",overflowY:"auto",marginTop:0}}>
-      <div className="mobile-header" style={{display:"none",height:56}}/>
-      {mainContent}
-    </div>
+    {mobMenu&&<div className="sidebar-mobile" style={{position:"fixed",top:0,left:0,bottom:0,width:280,background:"#fff",zIndex:100,display:"flex",flexDirection:"column",boxShadow:"4px 0 20px rgba(0,0,0,.1)"}}>{sidebarContent}</div>}
+    <div className="sidebar-desktop" style={{width:240,minWidth:240,background:"#fff",borderRight:"1px solid #E4EBF0",display:"flex",flexDirection:"column",position:"sticky",top:0,height:"100vh"}}>{sidebarContent}</div>
+    <div className="main-content" style={{flex:1,padding:"24px 28px",overflowY:"auto"}}><div className="mobile-header" style={{display:"none",height:56}}/>{mainContent}</div>
   </div>;
 }
 
