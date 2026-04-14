@@ -515,7 +515,7 @@ function FilesPage({user,branches,files,setFiles,folders,setFolders}){
   </div>;
 }
 
-function SettingsPage({emps,branches,setBranches,bt,setBt,et,setEt,ap,setAp,kpis,setKpis}){
+function SettingsPage({emps,branches,setBranches,bt,setBt,et,setEt,ap,setAp,kpis,setKpis,rolePerms,setRolePerms}){
   const[tab,setTab]=useState("kpis");const[showAdd,setShowAdd]=useState(false);const[nb,setNb]=useState("");const[tm,setTm]=useState(MO);
   const[editKpi,setEditKpi]=useState(null);const[kw,setKw]=useState("");
   const accts=emps.filter(e=>e.role==="accountant");const pharms=emps.filter(e=>e.role==="pharmacist");
@@ -533,7 +533,10 @@ function SettingsPage({emps,branches,setBranches,bt,setBt,et,setEt,ap,setAp,kpis
     if(LIVE)await sbUpdate("kpi_definitions",editKpi,{weight:Number(kw)});
     setEditKpi(null);setKw("");}};
   const totalW=kpis.reduce((s,k)=>s+k.w,0);
-  const tabs=[{id:"kpis",l:"KPIs"},{id:"bt",l:"Branch Targets"},{id:"et",l:"Emp Targets"},{id:"ap",l:"Accountant"},{id:"br",l:"Branches"}];
+  const tabs=[{id:"kpis",l:"KPIs"},{id:"bt",l:"Branch Targets"},{id:"et",l:"Emp Targets"},{id:"ap",l:"Accountant"},{id:"perms",l:"Permissions"},{id:"br",l:"Branches"}];
+  const allTabs=[{id:"dashboard",l:"Dashboard"},{id:"entry",l:"KPI Entry"},{id:"mylog",l:"My Entries"},{id:"emps",l:"Employees"},{id:"tasks",l:"Tasks"},{id:"msgs",l:"Messages"},{id:"files",l:"Files"}];
+  const roles=["pharmacist","manager","accountant"];
+  const togPerm=(role,tabId)=>setRolePerms(p=>({...p,[role]:{...p[role],[tabId]:!(p[role]||{})[tabId]}}));
   return<div>
     <h1 style={{fontSize:26,fontWeight:500,marginBottom:20}}>Settings</h1>
     <div style={{display:"flex",gap:4,marginBottom:20,background:"#fff",borderRadius:10,padding:4,border:"1px solid #E4EBF0",width:"fit-content",flexWrap:"wrap"}}>
@@ -543,6 +546,27 @@ function SettingsPage({emps,branches,setBranches,bt,setBt,et,setEt,ap,setAp,kpis
     {tab==="bt"&&<div><div style={{marginBottom:16,maxWidth:200}}><label style={LS}>Month</label><input type="month" value={tm} onChange={e=>setTm(e.target.value)} style={IS}/></div><div style={wrapS}><div style={headS}><b>Sales Targets — {tm}</b></div><table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr><Th>Branch</Th>{bK.map(k=><Th key={k.id}>{k.name}</Th>)}</tr></thead><tbody>{branches.map(br=><tr key={br.id} style={{borderBottom:"1px solid #E4EBF0"}}><Td b>{br.name}</Td>{bK.map(k=>{const t=bt.find(x=>x.bid===br.id&&x.kid===k.id&&x.mo===tm);return<Td key={k.id}><input type="number" style={{...IS,width:130}} value={t?.v||""} placeholder="Set..." onChange={e=>uBT(br.id,k.id,e.target.value)}/></Td>})}</tr>)}</tbody></table></div></div>}
     {tab==="et"&&<div><div style={{marginBottom:16,maxWidth:200}}><label style={LS}>Month</label><input type="month" value={tm} onChange={e=>setTm(e.target.value)} style={IS}/></div><div style={wrapS}><table style={{width:"100%",borderCollapse:"collapse"}}><thead><tr><Th>Pharmacist</Th><Th>Branch</Th>{eK.map(k=><Th key={k.id}>{k.name}</Th>)}</tr></thead><tbody>{pharms.map(e=><tr key={e.id} style={{borderBottom:"1px solid #E4EBF0"}}><Td b>{e.name}</Td><Td>{branches.find(b=>b.id===e.bid)?.name}</Td>{eK.map(k=>{const t=et.find(x=>x.eid===e.id&&x.kid===k.id&&x.mo===tm);return<Td key={k.id}><input type="number" style={{...IS,width:100}} value={t?.v||""} placeholder="..." onChange={ev=>uET(e.id,k.id,ev.target.value)}/></Td>})}</tr>)}</tbody></table></div></div>}
     {tab==="ap"&&<div>{accts.length===0?<p style={{color:"#9AABB8",textAlign:"center",padding:40}}>No accountants</p>:accts.map(ac=><div key={ac.id} style={wrapS}><div style={{...headS}}><b>{ac.name}</b><Pill type="orange">{ap.filter(p=>p.eid===ac.id).length}/{kpis.length}</Pill></div><div style={{padding:16,display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:10}}>{kpis.map(k=>{const has=ap.some(p=>p.eid===ac.id&&p.kid===k.id);return<label key={k.id} style={{display:"flex",gap:8,padding:"10px 12px",background:has?"#E8F8FC":"#F7F9FC",border:"1px solid "+(has?"#00B4D8":"#E4EBF0"),borderRadius:8,cursor:"pointer"}}><input type="checkbox" checked={has} onChange={()=>tP(ac.id,k.id)}/><div><div style={{fontWeight:600,fontSize:12}}>{k.name}</div><div style={{fontSize:10,color:"#9AABB8"}}>{k.w}%</div></div></label>})}</div></div>)}</div>}
+    {tab==="perms"&&<div>
+      <p style={{fontSize:13,color:"#6B7D8E",marginBottom:16}}>Control which pages each role can see. Admin always has full access.</p>
+      <div style={wrapS}>
+        <table style={{width:"100%",borderCollapse:"collapse"}}>
+          <thead><tr><Th>Page</Th>{roles.map(r=><Th key={r}><RP role={r}/></Th>)}</tr></thead>
+          <tbody>{allTabs.map(t=><tr key={t.id} style={{borderBottom:"1px solid #E4EBF0"}}>
+            <Td b>{t.l}</Td>
+            {roles.map(r=>{const on=(rolePerms[r]||{})[t.id]===true;return<Td key={r}>
+              <label style={{display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>
+                <div onClick={()=>togPerm(r,t.id)} style={{width:36,height:20,borderRadius:10,background:on?"#00B4D8":"#D0DAE2",position:"relative",cursor:"pointer",transition:"background .2s"}}>
+                  <div style={{width:16,height:16,borderRadius:8,background:"#fff",position:"absolute",top:2,left:on?18:2,transition:"left .2s",boxShadow:"0 1px 3px rgba(0,0,0,.2)"}}/>
+                </div>
+              </label>
+            </Td>})}
+          </tr>)}</tbody>
+        </table>
+      </div>
+      <div style={{marginTop:12,display:"flex",gap:8}}>
+        <button onClick={()=>setRolePerms({pharmacist:{dashboard:true,entry:false,mylog:false,emps:false,tasks:true,msgs:true,files:true,settings:false},manager:{dashboard:true,entry:false,mylog:false,emps:false,tasks:true,msgs:true,files:true,settings:false},accountant:{dashboard:false,entry:true,mylog:true,emps:false,tasks:false,msgs:false,files:false,settings:false}})} style={{...BG,fontSize:11}}>Reset to defaults</button>
+      </div>
+    </div>}
     {tab==="br"&&<div><button onClick={()=>setShowAdd(true)} style={{...BS,marginBottom:16}}>+ Branch</button><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12}}>{branches.map(br=><div key={br.id} style={cardS}><div style={{...acS,background:"linear-gradient(90deg,#00B4D8,#F58634)"}}/><b style={{fontSize:16}}>{br.name}</b><div style={{fontSize:12,color:"#6B7D8E"}}>{emps.filter(e=>e.bid===br.id).length} employees</div></div>)}</div><Modal open={showAdd} onClose={()=>setShowAdd(false)} title="Add Branch"><div style={{marginBottom:14}}><label style={LS}>Name</label><input value={nb} onChange={e=>setNb(e.target.value)} style={IS}/></div><div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setShowAdd(false)} style={BG}>Cancel</button><button onClick={addB} style={BS}>Add</button></div></Modal></div>}
     <Modal open={!!editKpi} onClose={()=>{setEditKpi(null);setKw("");}} title={"Edit Weight — "+(kpis.find(k=>k.id===editKpi)?.name||"")}>
       <p style={{fontSize:13,color:"#6B7D8E",marginBottom:14}}>Current total weight: <b style={{color:totalW===100?"#22C55E":"#EF4444"}}>{totalW}%</b>. Changing this KPI from {kpis.find(k=>k.id===editKpi)?.w}% to:</p>
@@ -663,6 +687,12 @@ function App(){
   const[ap,setAp]=useState(()=>loadState("ap",[{id:"ap1",eid:"e2",kid:"k1"},{id:"ap2",eid:"e2",kid:"k4"}]));
   const[files,setFiles]=useState(()=>loadState("files",I_FILES.map(f=>({...f,fid:null}))));
   const[folders,setFolders]=useState(()=>loadState("folders",[{id:"fl1",name:"SOPs",parent:null},{id:"fl2",name:"Training",parent:null},{id:"fl3",name:"Reports",parent:null}]));
+  const DEF_PERMS={
+    pharmacist:{dashboard:true,entry:false,mylog:false,emps:false,tasks:true,msgs:true,files:true,settings:false},
+    manager:{dashboard:true,entry:false,mylog:false,emps:false,tasks:true,msgs:true,files:true,settings:false},
+    accountant:{dashboard:false,entry:true,mylog:true,emps:false,tasks:false,msgs:false,files:false,settings:false}
+  };
+  const[rolePerms,setRolePerms]=useState(()=>loadState("rolePerms",DEF_PERMS));
   const[mobMenu,setMobMenu]=useState(false);
   const[showPwChange,setShowPwChange]=useState(false);
   const[newPw,setNewPw]=useState("");const[newPw2,setNewPw2]=useState("");const[pwMsg,setPwMsg]=useState("");const[pwErr,setPwErr]=useState("");
@@ -757,6 +787,7 @@ function App(){
   React.useEffect(()=>{if(!LIVE)saveState("ap",ap)},[ap]);
   React.useEffect(()=>{if(!LIVE)saveState("files",files)},[files]);
   React.useEffect(()=>{if(!LIVE)saveState("folders",folders)},[folders]);
+  React.useEffect(()=>{saveState("rolePerms",rolePerms)},[rolePerms]);
 
   // ── Loading screen ──
   if(loading)return<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#F7F9FC"}}>
@@ -812,19 +843,20 @@ function App(){
   if(!loggedIn)return<LoginPage onLogin={handleLogin} live={LIVE}/>;
 
   const r=user.role;
+  const canSee=(tabId)=>r==="admin"?true:(rolePerms[r]||{})[tabId]===true;
   const nav=[
-    {id:"msgs",l:"Messages",show:r!=="accountant",badge:dms.filter(d=>d.rid===user.id&&!d.read).length},
-    {id:"dashboard",l:"Dashboard",show:r!=="accountant"},
-    {id:"entry",l:"KPI Entry",show:r==="admin"||r==="accountant"},
-    {id:"mylog",l:"My Entries",show:r==="accountant"},
-    {id:"emps",l:"Employees",show:r==="admin"},
-    {id:"tasks",l:"Tasks",show:r!=="accountant",badge:tasks.filter(t=>!t.done).length},
-    {id:"files",l:"Files",show:r!=="accountant"},
+    {id:"msgs",l:"Messages",show:canSee("msgs"),badge:dms.filter(d=>d.rid===user.id&&!d.read).length},
+    {id:"dashboard",l:"Dashboard",show:canSee("dashboard")},
+    {id:"entry",l:"KPI Entry",show:canSee("entry")},
+    {id:"mylog",l:"My Entries",show:canSee("mylog")},
+    {id:"emps",l:"Employees",show:canSee("emps")},
+    {id:"tasks",l:"Tasks",show:canSee("tasks"),badge:tasks.filter(t=>!t.done).length},
+    {id:"files",l:"Files",show:canSee("files")},
     {id:"settings",l:"Settings",show:r==="admin"}
   ];
 
   const resetData=()=>{if(confirm("Reset all data to demo defaults?")){
-    ["loggedIn","page","user","emps","kpis","entries","anns","dms","tasks","branches","bt","et","ap","files","folders"].forEach(k=>localStorage.removeItem("fb_"+k));
+    ["loggedIn","page","user","emps","kpis","entries","anns","dms","tasks","branches","bt","et","ap","files","folders","rolePerms"].forEach(k=>localStorage.removeItem("fb_"+k));
     location.reload();
   }};
 
@@ -863,7 +895,7 @@ function App(){
     {page==="tasks"&&<TasksPage user={user} emps={emps} tasks={tasks} setTasks={setTasks}/>}
     {page==="msgs"&&<MsgsPage user={user} emps={emps} anns={anns} setAnns={setAnns} dms={dms} setDms={setDms}/>}
     {page==="files"&&<FilesPage user={user} branches={branches} files={files} setFiles={setFiles} folders={folders} setFolders={setFolders}/>}
-    {page==="settings"&&<SettingsPage emps={emps} branches={branches} setBranches={setBranches} bt={bt} setBt={setBt} et={et} setEt={setEt} ap={ap} setAp={setAp} kpis={kpis} setKpis={setKpis}/>}
+    {page==="settings"&&<SettingsPage emps={emps} branches={branches} setBranches={setBranches} bt={bt} setBt={setBt} et={et} setEt={setEt} ap={ap} setAp={setAp} kpis={kpis} setKpis={setKpis} rolePerms={rolePerms} setRolePerms={setRolePerms}/>}
   </>;
 
   return<div style={{display:"flex",minHeight:"100vh"}}>
