@@ -404,17 +404,48 @@ function TasksPage({user,emps,tasks,setTasks}){
 }
 
 function FilesPage({user,branches,files,setFiles,folders,setFolders}){
-  const[showFolder,setShowFolder]=useState(false);const[nf,setNf]=useState("");
-  const[curFolder,setCurFolder]=useState(null);
+  const[showFolder,setShowFolder]=useState(false);const[showUpload,setShowUpload]=useState(false);
+  const[nf,setNf]=useState("");const[curFolder,setCurFolder]=useState(null);
+  const[uploading,setUploading]=useState(false);
+  const[uf,setUf]=useState({desc:"",tt:"all",tid:""});
+  const fileRef=React.useRef(null);
   const my=files.filter(f=>user.role==="admin"||f.tt==="all"||(f.tt==="branch"&&f.tid===user.bid));
   const myFolders=folders.filter(f=>f.parent===curFolder);
   const myFiles=my.filter(f=>f.fid===curFolder);
   const addFolder=async()=>{if(!nf)return;const fid="fl"+Date.now();setFolders(p=>[...p,{id:fid,name:nf,parent:curFolder}]);
     if(LIVE){const r=await sbInsert("folders",{name:nf,parent_id:curFolder||null});if(r)setFolders(p=>p.map(x=>x.id===fid?{id:r.id,name:r.name,parent:r.parent_id}:x));}
     setNf("");setShowFolder(false);};
+
+  const uploadFile=async()=>{
+    const fileInput=fileRef.current;
+    if(!fileInput||!fileInput.files[0])return;
+    setUploading(true);
+    const file=fileInput.files[0];
+    const fname=Date.now()+"_"+file.name;
+    const ftype=file.type;
+    const isPdf=ftype.includes("pdf");
+    const isImg=ftype.includes("image");
+    let fileUrl="";
+
+    if(LIVE){
+      const{data:upData,error:upErr}=await SB.storage.from("files").upload(fname,file);
+      if(upErr){console.error("Upload error:",upErr);setUploading(false);return;}
+      const{data:urlData}=SB.storage.from("files").getPublicUrl(fname);
+      fileUrl=urlData?.publicUrl||"";
+      const r=await sbInsert("files",{file_name:file.name,file_url:fileUrl,file_size:file.size,file_type:ftype,target_type:uf.tt,target_id:uf.tt!=="all"?uf.tid:null,description:uf.desc||null,folder_id:curFolder||null,uploaded_by:user.id});
+      if(r)setFiles(p=>[...p,{id:r.id,name:r.file_name,type:isPdf?"pdf":isImg?"img":"other",tt:r.target_type,tid:r.target_id,desc:r.description,fid:r.folder_id,url:r.file_url,size:r.file_size}]);
+    }else{
+      setFiles(p=>[...p,{id:"f"+Date.now(),name:file.name,type:isPdf?"pdf":isImg?"img":"other",tt:uf.tt,tid:uf.tt!=="all"?uf.tid:null,desc:uf.desc,fid:curFolder,url:"",size:file.size}]);
+    }
+    setUploading(false);setShowUpload(false);setUf({desc:"",tt:"all",tid:""});
+    if(fileRef.current)fileRef.current.value="";
+  };
+
   const breadcrumb=[];
   let bc=curFolder;
   while(bc){const fl=folders.find(f=>f.id===bc);if(fl){breadcrumb.unshift(fl);bc=fl.parent;}else break;}
+
+  const fmtSize=(s)=>{if(!s)return"";if(s<1024)return s+"B";if(s<1048576)return(s/1024).toFixed(1)+"KB";return(s/1048576).toFixed(1)+"MB";};
 
   return<div>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24}}>
@@ -429,15 +460,15 @@ function FilesPage({user,branches,files,setFiles,folders,setFolders}){
       </div>
       {user.role==="admin"&&<div style={{display:"flex",gap:8}}>
         <button onClick={()=>setShowFolder(true)} style={BG}>+ Folder</button>
-        <button onClick={async()=>{const name=prompt("File name:");if(name){const fid="f"+Date.now();setFiles(p=>[...p,{id:fid,name,type:name.endsWith(".pdf")?"pdf":"img",tt:"all",tid:null,desc:"",fid:curFolder}]);if(LIVE){const r=await sbInsert("files",{file_name:name,file_type:name.endsWith(".pdf")?"application/pdf":"image/png",target_type:"all",folder_id:curFolder||null});if(r)setFiles(p=>p.map(x=>x.id===fid?{id:r.id,name:r.file_name,type:r.file_type?.includes("pdf")?"pdf":"img",tt:r.target_type,tid:r.target_id,desc:r.description,fid:r.folder_id}:x));}}}} style={BS}>+ File</button>
+        <button onClick={()=>setShowUpload(true)} style={BS}>+ Upload</button>
       </div>}
     </div>
 
     {myFolders.length>0&&<div style={{marginBottom:16}}>
       <div style={{fontSize:11,fontWeight:600,color:"#9AABB8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Folders</div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:10}}>
-        {myFolders.map(f=><div key={f.id} onClick={()=>setCurFolder(f.id)} style={{background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:"14px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:10,transition:"border-color .15s"}}>
-          <div style={{width:36,height:36,borderRadius:8,background:"linear-gradient(135deg,#E8F8FC,#FEF3E8)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>📁</div>
+        {myFolders.map(f=><div key={f.id} onClick={()=>setCurFolder(f.id)} style={{background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:"14px 16px",cursor:"pointer",display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:36,height:36,borderRadius:8,background:"linear-gradient(135deg,#E8F8FC,#FEF3E8)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>📁</div>
           <div><div style={{fontWeight:600,fontSize:13}}>{f.name}</div>
             <div style={{fontSize:11,color:"#9AABB8"}}>{files.filter(x=>x.fid===f.id).length} files</div></div>
         </div>)}
@@ -447,10 +478,17 @@ function FilesPage({user,branches,files,setFiles,folders,setFolders}){
     {myFiles.length>0&&<div>
       <div style={{fontSize:11,fontWeight:600,color:"#9AABB8",textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Files</div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:12}}>
-        {myFiles.map(f=><div key={f.id} style={{background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:"14px 18px",display:"flex",gap:12,alignItems:"center"}}>
-          <div style={{width:40,height:40,borderRadius:10,background:f.type==="pdf"?"#FEE2E2":"#DBEAFE",color:f.type==="pdf"?"#DC2626":"#2563EB",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:11}}>{f.type==="pdf"?"PDF":"IMG"}</div>
-          <div style={{flex:1}}><div style={{fontWeight:600,fontSize:13}}>{f.name}</div>{f.desc&&<div style={{fontSize:11,color:"#6B7D8E"}}>{f.desc}</div>}<Pill type={f.tt==="all"?"cyan":"orange"}>{f.tt==="all"?"All":"Branch"}</Pill></div>
-          {user.role==="admin"&&<button onClick={async()=>{setFiles(p=>p.filter(x=>x.id!==f.id));if(LIVE)await sbDelete("files",f.id);}} style={{background:"none",border:"none",cursor:"pointer",color:"#EF4444",fontSize:14,opacity:.4}}>✕</button>}
+        {myFiles.map(f=><div key={f.id} onClick={()=>{if(f.url)window.open(f.url,"_blank");}} style={{background:"#fff",border:"1px solid #E4EBF0",borderRadius:12,padding:"14px 18px",display:"flex",gap:12,alignItems:"center",cursor:f.url?"pointer":"default"}}>
+          <div style={{width:40,height:40,borderRadius:10,background:f.type==="pdf"?"#FEE2E2":f.type==="img"?"#DBEAFE":"#F1F5F9",color:f.type==="pdf"?"#DC2626":f.type==="img"?"#2563EB":"#6B7D8E",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:11}}>{f.type==="pdf"?"PDF":f.type==="img"?"IMG":"FILE"}</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontWeight:600,fontSize:13,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{f.name}</div>
+            <div style={{display:"flex",gap:6,alignItems:"center",marginTop:4}}>
+              {f.desc&&<span style={{fontSize:11,color:"#6B7D8E"}}>{f.desc}</span>}
+              <Pill type={f.tt==="all"?"cyan":"orange"}>{f.tt==="all"?"All":"Branch"}</Pill>
+              {f.size&&<span style={{fontSize:10,color:"#9AABB8"}}>{fmtSize(f.size)}</span>}
+            </div>
+          </div>
+          {user.role==="admin"&&<button onClick={async(ev)=>{ev.stopPropagation();setFiles(p=>p.filter(x=>x.id!==f.id));if(LIVE){if(f.url){const fname=f.url.split("/").pop();await SB.storage.from("files").remove([fname]);}await sbDelete("files",f.id);}}} style={{background:"none",border:"none",cursor:"pointer",color:"#EF4444",fontSize:14,opacity:.4,flexShrink:0}}>✕</button>}
         </div>)}
       </div>
     </div>}
@@ -458,8 +496,21 @@ function FilesPage({user,branches,files,setFiles,folders,setFolders}){
     {myFolders.length===0&&myFiles.length===0&&<p style={{color:"#9AABB8",textAlign:"center",padding:40}}>{curFolder?"This folder is empty":"No files yet"}</p>}
 
     <Modal open={showFolder} onClose={()=>setShowFolder(false)} title="New Folder">
-      <div style={{marginBottom:14}}><label style={LS}>Folder Name</label><input value={nf} onChange={e=>setNf(e.target.value)} style={IS} placeholder="e.g. SOPs, Training, Reports..."/></div>
+      <div style={{marginBottom:14}}><label style={LS}>Folder Name</label><input value={nf} onChange={e=>setNf(e.target.value)} style={IS} placeholder="e.g. SOPs, Training..."/></div>
       <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setShowFolder(false)} style={BG}>Cancel</button><button onClick={addFolder} style={BS}>Create</button></div>
+    </Modal>
+
+    <Modal open={showUpload} onClose={()=>setShowUpload(false)} title="Upload File">
+      <div style={{marginBottom:14}}>
+        <label style={LS}>File</label>
+        <input ref={fileRef} type="file" style={{...IS,padding:8}} />
+      </div>
+      <div style={{marginBottom:14}}><label style={LS}>Description (optional)</label><input value={uf.desc} onChange={e=>setUf({...uf,desc:e.target.value})} style={IS} placeholder="What is this file?"/></div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
+        <div><label style={LS}>Visible To</label><select value={uf.tt} onChange={e=>setUf({...uf,tt:e.target.value,tid:""})} style={IS}><option value="all">Everyone</option><option value="branch">Specific Branch</option><option value="employee">Specific Employee</option></select></div>
+        {uf.tt==="branch"&&<div><label style={LS}>Branch</label><select value={uf.tid} onChange={e=>setUf({...uf,tid:e.target.value})} style={IS}><option value="">Select...</option>{branches.map(b=><option key={b.id} value={b.id}>{b.name}</option>)}</select></div>}
+      </div>
+      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setShowUpload(false)} style={BG}>Cancel</button><button onClick={uploadFile} disabled={uploading} style={{...BS,opacity:uploading?.6:1}}>{uploading?"Uploading...":"Upload"}</button></div>
     </Modal>
   </div>;
 }
@@ -604,7 +655,7 @@ function App(){
           if(taskData)setTasks(taskData.map(mapTask));
           if(dmData)setDms(dmData.map(mapDm));
           if(apData)setAp(apData.map(a=>({id:a.id,eid:a.employee_id,kid:a.kpi_id})));
-          if(fileData)setFiles(fileData.map(f=>({id:f.id,name:f.file_name,type:f.file_type?.includes("pdf")?"pdf":"img",tt:f.target_type,tid:f.target_id,desc:f.description,fid:f.folder_id})));
+          if(fileData)setFiles(fileData.map(f=>({id:f.id,name:f.file_name,type:f.file_type?.includes("pdf")?"pdf":f.file_type?.includes("image")?"img":"other",tt:f.target_type,tid:f.target_id,desc:f.description,fid:f.folder_id,url:f.file_url,size:f.file_size})));
           if(folderData)setFolders(folderData.map(f=>({id:f.id,name:f.name,parent:f.parent_id})));
           if(kpiData)setKpis(kpiData.sort((a,b)=>a.sort_order-b.sort_order).map(k=>({
             id:k.id,name:k.name,code:k.code,inp:k.input_type==="percent"?"pct":k.input_type,
@@ -686,7 +737,7 @@ function App(){
       if(taskD)setTasks(taskD.map(mapTask));
       if(dmD)setDms(dmD.map(mapDm));
       if(apD)setAp(apD.map(a=>({id:a.id,eid:a.employee_id,kid:a.kpi_id})));
-      if(fileD)setFiles(fileD.map(f=>({id:f.id,name:f.file_name,type:f.file_type?.includes("pdf")?"pdf":"img",tt:f.target_type,tid:f.target_id,desc:f.description,fid:f.folder_id})));
+      if(fileD)setFiles(fileD.map(f=>({id:f.id,name:f.file_name,type:f.file_type?.includes("pdf")?"pdf":f.file_type?.includes("image")?"img":"other",tt:f.target_type,tid:f.target_id,desc:f.description,fid:f.folder_id,url:f.file_url,size:f.file_size})));
       if(folderD)setFolders(folderD.map(f=>({id:f.id,name:f.name,parent:f.parent_id})));
       setPage(defPage(emp.role));
       return null;
