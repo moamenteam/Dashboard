@@ -553,20 +553,65 @@ function SettingsPage({emps,branches,setBranches,bt,setBt,et,setEt,ap,setAp,kpis
   </div>;
 }
 
-function LoginPage({onLogin,live}){
-  const[email,setEmail]=useState("");const[pw,setPw]=useState("");const[err,setErr]=useState("");const[loading,setLoading]=useState(false);
+function LoginPage({onLogin,onSetup,live}){
+  const[mode,setMode]=useState("login");
+  const[email,setEmail]=useState("");const[pw,setPw]=useState("");const[pw2,setPw2]=useState("");
+  const[err,setErr]=useState("");const[ok,setOk]=useState("");const[loading,setLoading]=useState(false);
+
   const go=async()=>{setLoading(true);setErr("");const e=await onLogin(email,pw);if(e)setErr(e);setLoading(false);};
+
+  const setup=async()=>{
+    if(!email||!pw){setErr("Enter email and password");return;}
+    if(pw.length<6){setErr("Password must be at least 6 characters");return;}
+    if(pw!==pw2){setErr("Passwords don't match");return;}
+    setLoading(true);setErr("");
+    if(!LIVE){setErr("Setup only works in live mode");setLoading(false);return;}
+    // Check employee exists
+    const{data:emp}=await SB.from("employees").select("id,auth_id").eq("email",email).single();
+    if(!emp){setErr("Email not found. Ask your admin to add you first.");setLoading(false);return;}
+    if(emp.auth_id){setErr("Account already set up. Use Sign In instead.");setLoading(false);return;}
+    // Create auth account
+    const{data:authData,error:authErr}=await SB.auth.signUp({email,password:pw});
+    if(authErr){setErr(authErr.message);setLoading(false);return;}
+    // Link auth_id to employee — use service approach via RPC or direct
+    // Since anon key can't update employees (admin only RLS), we use a workaround:
+    // The admin pre-allows this via a special function
+    const{error:linkErr}=await SB.rpc("link_auth_to_employee",{emp_id:emp.id,auth_uid:authData.user.id});
+    if(linkErr){
+      // Fallback: try direct update (works if RLS allows)
+      await SB.from("employees").update({auth_id:authData.user.id}).eq("id",emp.id);
+    }
+    setOk("Account created! You can now sign in.");
+    setMode("login");setPw("");setPw2("");setLoading(false);
+  };
+
   return<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#F0FBFE,#FEF3E8)"}}>
     <div style={{width:380,maxWidth:"92vw"}}><div style={{textAlign:"center",marginBottom:28}}>
       <div style={{width:64,height:64,borderRadius:16,background:"linear-gradient(135deg,#00B4D8,#0077B6)",display:"inline-flex",alignItems:"center",justifyContent:"center",marginBottom:12}}><span style={{color:"#fff",fontSize:26,fontWeight:700}}>F</span></div>
       <h1 style={{fontSize:22,color:"#0077B6"}}>First Brand Pharmacy</h1>
       <p style={{fontSize:11,color:live?"#22C55E":"#F58634",marginTop:6,fontWeight:600}}>{live?"● Live Mode":"● Demo Mode"}</p></div>
       <div style={{background:"#fff",borderRadius:16,padding:24,boxShadow:"0 8px 24px rgba(0,0,0,.06)"}}>
-        <div style={{marginBottom:14}}><label style={LS}>Email</label><input type="email" value={email} onChange={e=>{setEmail(e.target.value);setErr("");}} onKeyDown={e=>e.key==="Enter"&&go()} style={{...IS,padding:12}} placeholder="name@firstbrand.sa"/></div>
-        <div style={{marginBottom:14}}><label style={LS}>Password</label><input type="password" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()} style={{...IS,padding:12}} placeholder="••••••••"/></div>
-        {err&&<div style={{fontSize:12,color:"#EF4444",marginBottom:12,padding:8,background:"#FEF2F2",borderRadius:8}}>{err}</div>}
-        <button onClick={go} disabled={loading} style={{...BS,width:"100%",padding:12,fontSize:14,justifyContent:"center",opacity:loading?.6:1}}>{loading?"Signing in...":"Sign In"}</button>
-        {!live&&<p style={{marginTop:14,fontSize:10,color:"#9AABB8",textAlign:"center"}}>Demo: moamen@ · sara@ · khalid@ · ahmed@ @firstbrand.sa (any password)</p>}
+
+        {mode==="login"&&<>
+          <div style={{marginBottom:14}}><label style={LS}>Email</label><input type="email" value={email} onChange={e=>{setEmail(e.target.value);setErr("");setOk("");}} onKeyDown={e=>e.key==="Enter"&&go()} style={{...IS,padding:12}} placeholder="name@firstbrand.sa"/></div>
+          <div style={{marginBottom:14}}><label style={LS}>Password</label><input type="password" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()} style={{...IS,padding:12}} placeholder="••••••••"/></div>
+          {ok&&<div style={{fontSize:12,color:"#22C55E",marginBottom:12,padding:8,background:"#F0FDF4",borderRadius:8}}>{ok}</div>}
+          {err&&<div style={{fontSize:12,color:"#EF4444",marginBottom:12,padding:8,background:"#FEF2F2",borderRadius:8}}>{err}</div>}
+          <button onClick={go} disabled={loading} style={{...BS,width:"100%",padding:12,fontSize:14,justifyContent:"center",opacity:loading?.6:1}}>{loading?"Signing in...":"Sign In"}</button>
+          {live&&<p onClick={()=>{setMode("setup");setErr("");setOk("");}} style={{marginTop:16,fontSize:13,color:"#00B4D8",textAlign:"center",cursor:"pointer",fontWeight:600}}>First time? Set your password</p>}
+          {!live&&<p style={{marginTop:14,fontSize:10,color:"#9AABB8",textAlign:"center"}}>Demo: moamen@ · sara@ · khalid@ · ahmed@ @firstbrand.sa (any password)</p>}
+        </>}
+
+        {mode==="setup"&&<>
+          <div style={{marginBottom:16}}><h3 style={{fontSize:16,fontWeight:600,marginBottom:4}}>Set up your account</h3><p style={{fontSize:12,color:"#6B7D8E"}}>Enter the email your admin registered for you</p></div>
+          <div style={{marginBottom:14}}><label style={LS}>Your email</label><input type="email" value={email} onChange={e=>{setEmail(e.target.value);setErr("");}} style={{...IS,padding:12}} placeholder="name@firstbrand.sa"/></div>
+          <div style={{marginBottom:14}}><label style={LS}>Choose password</label><input type="password" value={pw} onChange={e=>setPw(e.target.value)} style={{...IS,padding:12}} placeholder="Min 6 characters"/></div>
+          <div style={{marginBottom:14}}><label style={LS}>Confirm password</label><input type="password" value={pw2} onChange={e=>setPw2(e.target.value)} onKeyDown={e=>e.key==="Enter"&&setup()} style={{...IS,padding:12}} placeholder="Type password again"/></div>
+          {err&&<div style={{fontSize:12,color:"#EF4444",marginBottom:12,padding:8,background:"#FEF2F2",borderRadius:8}}>{err}</div>}
+          <button onClick={setup} disabled={loading} style={{...BS,width:"100%",padding:12,fontSize:14,justifyContent:"center",opacity:loading?.6:1}}>{loading?"Creating account...":"Create Account"}</button>
+          <p onClick={()=>{setMode("login");setErr("");}} style={{marginTop:16,fontSize:13,color:"#00B4D8",textAlign:"center",cursor:"pointer",fontWeight:600}}>Back to Sign In</p>
+        </>}
+
       </div>
     </div>
   </div>;
@@ -619,6 +664,16 @@ function App(){
   const[files,setFiles]=useState(()=>loadState("files",I_FILES.map(f=>({...f,fid:null}))));
   const[folders,setFolders]=useState(()=>loadState("folders",[{id:"fl1",name:"SOPs",parent:null},{id:"fl2",name:"Training",parent:null},{id:"fl3",name:"Reports",parent:null}]));
   const[mobMenu,setMobMenu]=useState(false);
+  const[showPwChange,setShowPwChange]=useState(false);
+  const[newPw,setNewPw]=useState("");const[newPw2,setNewPw2]=useState("");const[pwMsg,setPwMsg]=useState("");const[pwErr,setPwErr]=useState("");
+  const changePw=async()=>{
+    if(newPw.length<6){setPwErr("Min 6 characters");return;}
+    if(newPw!==newPw2){setPwErr("Passwords don't match");return;}
+    setPwErr("");
+    if(LIVE){const{error}=await SB.auth.updateUser({password:newPw});if(error){setPwErr(error.message);return;}}
+    setPwMsg("Password changed!");setNewPw("");setNewPw2("");
+    setTimeout(()=>{setShowPwChange(false);setPwMsg("");},1500);
+  };
 
   // ── Supabase: check session + load data ──
   React.useEffect(()=>{
@@ -785,6 +840,7 @@ function App(){
       </div>)}
       <div style={{flex:1}}/>
       <div style={{padding:"6px 12px",fontSize:10,color:LIVE?"#22C55E":"#F58634"}}>{LIVE?"● Connected to Supabase":"● Demo mode (localStorage)"}</div>
+      {LIVE&&<div onClick={()=>setShowPwChange(true)} style={{padding:"9px 12px",borderRadius:8,cursor:"pointer",fontSize:12,color:"#6B7D8E"}}>Change Password</div>}
       {!LIVE&&r==="admin"&&<div onClick={resetData} style={{padding:"9px 12px",borderRadius:8,cursor:"pointer",fontSize:12,color:"#9AABB8"}}>Reset Demo Data</div>}
       <div onClick={handleLogout} style={{padding:"9px 12px",borderRadius:8,cursor:"pointer",fontSize:13,color:"#EF4444"}}>Sign Out</div>
     </div>
@@ -820,6 +876,13 @@ function App(){
     {mobMenu&&<div className="sidebar-mobile" style={{position:"fixed",top:0,left:0,bottom:0,width:280,background:"#fff",zIndex:100,display:"flex",flexDirection:"column",boxShadow:"4px 0 20px rgba(0,0,0,.1)"}}>{sidebarContent}</div>}
     <div className="sidebar-desktop" style={{width:240,minWidth:240,background:"#fff",borderRight:"1px solid #E4EBF0",display:"flex",flexDirection:"column",position:"sticky",top:0,height:"100vh"}}>{sidebarContent}</div>
     <div className="main-content" style={{flex:1,padding:"24px 28px",overflowY:"auto"}}><div className="mobile-header" style={{display:"none",height:56}}/>{mainContent}</div>
+    <Modal open={showPwChange} onClose={()=>{setShowPwChange(false);setPwErr("");setPwMsg("");setNewPw("");setNewPw2("");}} title="Change Password">
+      <div style={{marginBottom:14}}><label style={LS}>New password</label><input type="password" value={newPw} onChange={e=>{setNewPw(e.target.value);setPwErr("");}} style={{...IS,padding:12}} placeholder="Min 6 characters"/></div>
+      <div style={{marginBottom:14}}><label style={LS}>Confirm new password</label><input type="password" value={newPw2} onChange={e=>{setNewPw2(e.target.value);setPwErr("");}} onKeyDown={e=>e.key==="Enter"&&changePw()} style={{...IS,padding:12}} placeholder="Type again"/></div>
+      {pwErr&&<div style={{fontSize:12,color:"#EF4444",marginBottom:12,padding:8,background:"#FEF2F2",borderRadius:8}}>{pwErr}</div>}
+      {pwMsg&&<div style={{fontSize:12,color:"#22C55E",marginBottom:12,padding:8,background:"#F0FDF4",borderRadius:8}}>{pwMsg}</div>}
+      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setShowPwChange(false)} style={BG}>Cancel</button><button onClick={changePw} style={BS}>Change Password</button></div>
+    </Modal>
   </div>;
 }
 
