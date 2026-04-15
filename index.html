@@ -66,14 +66,22 @@ const MO="2026-04";
 
 const I_BT=[
 {bid:"b1",kid:"k1",v:150000,mo:MO},{bid:"b2",kid:"k1",v:120000,mo:MO},
-{bid:"b3",kid:"k1",v:100000,mo:MO},{bid:"b4",kid:"k1",v:90000,mo:MO}
+{bid:"b3",kid:"k1",v:100000,mo:MO},{bid:"b4",kid:"k1",v:90000,mo:MO},
+{bid:"b1",kid:"k1",v:150000,mo:"2026-03"},{bid:"b2",kid:"k1",v:120000,mo:"2026-03"},
+{bid:"b3",kid:"k1",v:100000,mo:"2026-03"},{bid:"b1",kid:"k1",v:145000,mo:"2026-02"},
+{bid:"b2",kid:"k1",v:115000,mo:"2026-02"}
 ];
 
 const I_ET=[
 {eid:"e4",kid:"k2",v:45,mo:MO},{eid:"e4",kid:"k5",v:8000,mo:MO},{eid:"e4",kid:"k6",v:20,mo:MO},
 {eid:"e5",kid:"k2",v:42,mo:MO},{eid:"e5",kid:"k5",v:6000,mo:MO},{eid:"e5",kid:"k6",v:15,mo:MO},
 {eid:"e7",kid:"k2",v:40,mo:MO},{eid:"e7",kid:"k5",v:5000,mo:MO},{eid:"e7",kid:"k6",v:12,mo:MO},
-{eid:"e8",kid:"k2",v:38,mo:MO},{eid:"e8",kid:"k5",v:4500,mo:MO},{eid:"e8",kid:"k6",v:10,mo:MO}
+{eid:"e8",kid:"k2",v:38,mo:MO},{eid:"e8",kid:"k5",v:4500,mo:MO},{eid:"e8",kid:"k6",v:10,mo:MO},
+{eid:"e4",kid:"k2",v:45,mo:"2026-03"},{eid:"e4",kid:"k5",v:8000,mo:"2026-03"},{eid:"e4",kid:"k6",v:20,mo:"2026-03"},
+{eid:"e5",kid:"k2",v:42,mo:"2026-03"},{eid:"e5",kid:"k5",v:6000,mo:"2026-03"},{eid:"e5",kid:"k6",v:15,mo:"2026-03"},
+{eid:"e7",kid:"k2",v:40,mo:"2026-03"},{eid:"e7",kid:"k5",v:5000,mo:"2026-03"},{eid:"e7",kid:"k6",v:12,mo:"2026-03"},
+{eid:"e4",kid:"k2",v:43,mo:"2026-02"},{eid:"e4",kid:"k5",v:7500,mo:"2026-02"},{eid:"e4",kid:"k6",v:18,mo:"2026-02"},
+{eid:"e5",kid:"k2",v:40,mo:"2026-02"},{eid:"e5",kid:"k5",v:5500,mo:"2026-02"},{eid:"e5",kid:"k6",v:13,mo:"2026-02"}
 ];
 
 const I_EN=[
@@ -94,7 +102,38 @@ const I_EN=[
 {eid:"e7",kid:"k3",bid:"b3",v:95,mo:MO,by:"e1"},
 {eid:"e7",kid:"k4",bid:"b3",v:900,mo:MO,by:"e1"},
 {eid:"e7",kid:"k5",bid:"b3",v:6200,mo:MO,by:"e1"},
-{eid:"e7",kid:"k6",bid:"b3",v:14,mo:MO,by:"e1"}
+{eid:"e7",kid:"k6",bid:"b3",v:14,mo:MO,by:"e1"},
+// Previous months for trend
+{eid:"e4",kid:"k1",bid:"b1",v:138000,mo:"2026-03",by:"e1"},
+{eid:"e4",kid:"k2",bid:"b1",v:44,mo:"2026-03",by:"e1"},
+{eid:"e4",kid:"k3",bid:"b1",v:88,mo:"2026-03",by:"e1"},
+{eid:"e4",kid:"k4",bid:"b1",v:2100,mo:"2026-03",by:"e1"},
+{eid:"e4",kid:"k5",bid:"b1",v:7800,mo:"2026-03",by:"e1"},
+{eid:"e4",kid:"k6",bid:"b1",v:19,mo:"2026-03",by:"e1"},
+{eid:"e5",kid:"k1",bid:"b2",v:110000,mo:"2026-03",by:"e2"},
+{eid:"e5",kid:"k2",bid:"b2",v:37,mo:"2026-03",by:"e2"},
+{eid:"e5",kid:"k3",bid:"b2",v:82,mo:"2026-03",by:"e2"},
+{eid:"e5",kid:"k4",bid:"b2",v:1500,mo:"2026-03",by:"e2"},
+{eid:"e5",kid:"k5",bid:"b2",v:5200,mo:"2026-03",by:"e2"},
+{eid:"e5",kid:"k6",bid:"b2",v:14,mo:"2026-03",by:"e2"},
+{eid:"e7",kid:"k1",bid:"b3",v:82000,mo:"2026-03",by:"e1"},
+{eid:"e7",kid:"k2",bid:"b3",v:41,mo:"2026-03",by:"e1"},
+{eid:"e7",kid:"k3",bid:"b3",v:90,mo:"2026-03",by:"e1"},
+{eid:"e7",kid:"k4",bid:"b3",v:1200,mo:"2026-03",by:"e1"},
+{eid:"e7",kid:"k5",bid:"b3",v:5500,mo:"2026-03",by:"e1"},
+{eid:"e7",kid:"k6",bid:"b3",v:11,mo:"2026-03",by:"e1"},
+{eid:"e4",kid:"k1",bid:"b1",v:130000,mo:"2026-02",by:"e1"},
+{eid:"e4",kid:"k2",bid:"b1",v:41,mo:"2026-02",by:"e1"},
+{eid:"e4",kid:"k3",bid:"b1",v:85,mo:"2026-02",by:"e1"},
+{eid:"e4",kid:"k4",bid:"b1",v:2400,mo:"2026-02",by:"e1"},
+{eid:"e4",kid:"k5",bid:"b1",v:7000,mo:"2026-02",by:"e1"},
+{eid:"e4",kid:"k6",bid:"b1",v:16,mo:"2026-02",by:"e1"},
+{eid:"e5",kid:"k1",bid:"b2",v:105000,mo:"2026-02",by:"e2"},
+{eid:"e5",kid:"k2",bid:"b2",v:35,mo:"2026-02",by:"e2"},
+{eid:"e5",kid:"k3",bid:"b2",v:78,mo:"2026-02",by:"e2"},
+{eid:"e5",kid:"k4",bid:"b2",v:2800,mo:"2026-02",by:"e2"},
+{eid:"e5",kid:"k5",bid:"b2",v:4800,mo:"2026-02",by:"e2"},
+{eid:"e5",kid:"k6",bid:"b2",v:12,mo:"2026-02",by:"e2"}
 ];
 
 const I_ANN=[
@@ -113,9 +152,10 @@ const I_FILES=[
 {id:"f2",name:"Sawarmah_Layout.png",type:"img",tt:"branch",tid:"b1",desc:"Floor plan"}
 ];
 
-function calcScore(emp,entries,bt,et){
+function calcScore(emp,entries,bt,et,kpiList){
+  const kps=kpiList||KPIS;
   const sv=(entries.find(e=>e.eid===emp.id&&e.kid==="k1")||{}).v||0;
-  const res=KPIS.map(k=>{
+  const res=kps.map(k=>{
     const en=entries.find(e=>e.eid===emp.id&&e.kid===k.id);
     if(!en)return{k,v:null,t:null,s:null};
     let t=null;
@@ -149,26 +189,72 @@ function Th({children}){return<th style={{textAlign:"left",padding:"10px 16px",f
 function Td({children,b}){return<td style={{padding:"10px 16px",fontSize:13,fontWeight:b?600:400}}>{children}</td>}
 function Card({label,value,accent,sub,sm}){return<div style={cardS}><div style={{...acS,background:accent}}/><div style={{fontSize:11,color:"#9AABB8",textTransform:"uppercase",letterSpacing:1,marginBottom:6,fontWeight:600}}>{label}</div><div style={{fontSize:sm?16:26,fontWeight:700,letterSpacing:sm?0:-1}}>{value}</div>{sub&&<div style={{fontSize:11,color:"#9AABB8",marginTop:4}}>{sub}</div>}</div>}
 
-function Dashboard({user,emps,entries,bt,et,branches}){
+function Dashboard({user,emps,entries,bt,et,branches,kpis}){
   const isA=user.role==="admin";
-  const ph=emps.filter(e=>e.role==="pharmacist"&&(isA||e.bid===user.bid));
-  const sc=ph.map(p=>({e:p,...calcScore(p,entries,bt,et)}));
+  const[viewMonth,setViewMonth]=useState(MO);
+  const ph=emps.filter(e=>(e.role==="pharmacist"||e.role==="manager")&&(isA||e.bid===user.bid));
+  const moEntries=entries.filter(e=>e.mo===viewMonth);
+  const sc=ph.map(p=>({e:p,...calcScore(p,moEntries,bt.filter(t=>t.mo===viewMonth),et.filter(t=>t.mo===viewMonth),kpis)}));
   const sorted=[...sc].sort((a,b)=>b.total-a.total);
   const avg=sc.length?Math.round(sc.reduce((s,x)=>s+x.total,0)/sc.length*10)/10:0;
   const top=sorted[0];
-  const sales=entries.filter(e=>e.kid==="k1"&&(isA||emps.find(x=>x.id===e.eid)?.bid===user.bid)).reduce((s,e)=>s+e.v,0);
+  const sales=moEntries.filter(e=>e.kid==="k1"&&(isA||emps.find(x=>x.id===e.eid)?.bid===user.bid)).reduce((s,e)=>s+e.v,0);
+
+  // Get available months from entries
+  const months=[...new Set(entries.map(e=>e.mo))].sort().reverse();
+  if(!months.includes(viewMonth)&&months.length)setViewMonth(months[0]);
+
+  // CSV export
+  const exportCSV=()=>{
+    const hdr=["Pharmacist","Branch",...kpis.map(k=>k.name+" (Score)"),"Total"].join(",");
+    const rows=sorted.map(x=>[x.e.name,branches.find(b=>b.id===x.e.bid)?.name||"",...x.res.map(r=>r.s!==null?r.s:""),x.total].join(","));
+    const csv="data:text/csv;charset=utf-8,"+encodeURIComponent(hdr+"\n"+rows.join("\n"));
+    const a=document.createElement("a");a.href=csv;a.download="KPI_"+viewMonth+".csv";a.click();
+  };
+
+  // Trend data: avg score per month
+  const trendMonths=[...new Set(entries.map(e=>e.mo))].sort();
+  const trendData=trendMonths.map(mo=>{
+    const mEn=entries.filter(e=>e.mo===mo);
+    const mSc=ph.map(p=>calcScore(p,mEn,bt.filter(t=>t.mo===mo),et.filter(t=>t.mo===mo),kpis).total);
+    return{mo,avg:mSc.length?Math.round(mSc.reduce((a,b)=>a+b,0)/mSc.length*10)/10:0};
+  });
+  const tMax=Math.max(...trendData.map(d=>d.avg),100);
+
   return<div>
-    <h1 style={{fontSize:26,fontWeight:500,marginBottom:4}}>{isA?"Overview Dashboard":"Branch Dashboard"}</h1>
-    <p style={{fontSize:13,color:"#6B7D8E",marginBottom:24}}>{MO}</p>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24,flexWrap:"wrap",gap:12}}>
+      <div>
+        <h1 style={{fontSize:26,fontWeight:500,marginBottom:4}}>{isA?"Overview Dashboard":"Branch Dashboard"}</h1>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          <select value={viewMonth} onChange={e=>setViewMonth(e.target.value)} style={{...IS,width:"auto",padding:"4px 8px",fontSize:12}}>
+            {months.map(m=><option key={m} value={m}>{m}</option>)}
+            {!months.length&&<option value={MO}>{MO}</option>}
+          </select>
+          <span style={{fontSize:12,color:"#9AABB8"}}>{moEntries.length} entries</span>
+        </div>
+      </div>
+      <button onClick={exportCSV} style={BG}>Export CSV</button>
+    </div>
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:14,marginBottom:24}}>
       <Card label="Avg Score" value={avg+"%"} accent="#00B4D8"/>
       <Card label="Sales" value={(sales/1000).toFixed(0)+"K"} accent="#F58634" sub="SAR"/>
-      <Card label="Active" value={ph.filter(p=>entries.some(e=>e.eid===p.id)).length+"/"+ph.length} accent="#22C55E"/>
+      <Card label="Active" value={ph.filter(p=>moEntries.some(e=>e.eid===p.id)).length+"/"+ph.length} accent="#22C55E"/>
       {top&&<Card label="Top" value={top.e.name} accent="#F59E0B" sub={top.total+"%"} sm/>}
     </div>
-    <div style={wrapS}><div style={headS}><b>Scoreboard</b></div>
+
+    {trendData.length>1&&<div style={wrapS}><div style={headS}><b>Score Trend</b><span style={{fontSize:11,color:"#9AABB8"}}>Average across pharmacists</span></div>
+      <div style={{padding:"16px 20px",display:"flex",alignItems:"flex-end",gap:6,height:140}}>
+        {trendData.map(d=><div key={d.mo} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+          <span style={{fontSize:10,fontWeight:600,color:d.mo===viewMonth?"#00B4D8":"#6B7D8E"}}>{d.avg}%</span>
+          <div style={{width:"100%",maxWidth:48,height:Math.max((d.avg/tMax)*80,4),borderRadius:"4px 4px 0 0",background:d.mo===viewMonth?"linear-gradient(180deg,#00B4D8,#0077B6)":"#E4EBF0",transition:"height .3s"}}/>
+          <span style={{fontSize:9,color:d.mo===viewMonth?"#00B4D8":"#9AABB8",fontWeight:d.mo===viewMonth?600:400}}>{d.mo.slice(5)}</span>
+        </div>)}
+      </div>
+    </div>}
+
+    <div style={wrapS}><div style={headS}><b>Scoreboard — {viewMonth}</b></div>
       <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",minWidth:700}}>
-        <thead><tr><Th>Name</Th><Th>Branch</Th>{KPIS.map(k=><Th key={k.id}>{k.name} ({k.w}%)</Th>)}<Th>Total</Th></tr></thead>
+        <thead><tr><Th>Name</Th><Th>Branch</Th>{kpis.map(k=><Th key={k.id}>{k.name} ({k.w}%)</Th>)}<Th>Total</Th></tr></thead>
         <tbody>{sorted.map(x=><tr key={x.e.id} style={{borderBottom:"1px solid #E4EBF0"}}>
           <Td b>{x.e.name}</Td><Td>{branches.find(b=>b.id===x.e.bid)?.name}</Td>
           {x.res.map((r,i)=><Td key={i}>{r.s!==null?<Pill type={r.s>=r.k.w?"success":r.s>=r.k.w*.7?"warn":"danger"}>{r.s}%</Pill>:<Pill>—</Pill>}</Td>)}
@@ -176,9 +262,9 @@ function Dashboard({user,emps,entries,bt,et,branches}){
         </tr>)}</tbody>
       </table></div>
     </div>
-    {isA&&<div style={wrapS}><div style={headS}><b>Branch Sales</b></div><div style={{padding:"16px 20px"}}>{branches.filter(b=>entries.some(e=>e.bid===b.id&&e.kid==="k1")).map(br=>{
-      const s=entries.filter(e=>e.bid===br.id&&e.kid==="k1").reduce((a,e)=>a+e.v,0);
-      const t=(bt.find(x=>x.bid===br.id&&x.kid==="k1")||{}).v||1;
+    {isA&&<div style={wrapS}><div style={headS}><b>Branch Sales — {viewMonth}</b></div><div style={{padding:"16px 20px"}}>{branches.filter(b=>moEntries.some(e=>e.bid===b.id&&e.kid==="k1")).map(br=>{
+      const s=moEntries.filter(e=>e.bid===br.id&&e.kid==="k1").reduce((a,e)=>a+e.v,0);
+      const t=(bt.find(x=>x.bid===br.id&&x.kid==="k1"&&x.mo===viewMonth)||{}).v||1;
       const p=Math.min((s/t)*100,120);
       return<div key={br.id} style={{marginBottom:14}}><div style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:4}}><b>{br.name}</b><span style={{color:"#6B7D8E"}}>{(s/1000).toFixed(0)}K/{(t/1000).toFixed(0)}K</span></div>
         <div style={{height:6,background:"#E4EBF0",borderRadius:3,overflow:"hidden"}}><div style={{height:6,borderRadius:3,width:Math.min(p,100)+"%",background:p>=90?"#22C55E":p>=70?"#F58634":"#EF4444"}}/></div></div>
@@ -187,15 +273,49 @@ function Dashboard({user,emps,entries,bt,et,branches}){
 }
 
 function PharmDash({user,entries,bt,et,branches}){
-  const{res,total}=calcScore(user,entries,bt,et);
+  const[viewMonth,setViewMonth]=useState(MO);
+  const months=[...new Set(entries.filter(e=>e.eid===user.id).map(e=>e.mo))].sort().reverse();
+  if(!months.includes(viewMonth)&&months.length)setViewMonth(months[0]);
+  const moEn=entries.filter(e=>e.mo===viewMonth);
+  const{res,total}=calcScore(user,moEn,bt.filter(t=>t.mo===viewMonth),et.filter(t=>t.mo===viewMonth));
   const sc=total>=90?"#22C55E":total>=70?"#F58634":"#EF4444";
+
+  // Personal trend
+  const trendMonths=[...new Set(entries.filter(e=>e.eid===user.id).map(e=>e.mo))].sort();
+  const trendData=trendMonths.map(mo=>{
+    const mEn=entries.filter(e=>e.mo===mo);
+    return{mo,total:calcScore(user,mEn,bt.filter(t=>t.mo===mo),et.filter(t=>t.mo===mo)).total};
+  });
+  const tMax=Math.max(...trendData.map(d=>d.total),100);
+
   return<div>
-    <h1 style={{fontSize:26,fontWeight:500,marginBottom:4}}>My Performance</h1>
-    <p style={{fontSize:13,color:"#6B7D8E",marginBottom:24}}>{MO} — {branches.find(b=>b.id===user.bid)?.name}</p>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24}}>
+      <div>
+        <h1 style={{fontSize:26,fontWeight:500,marginBottom:4}}>My Performance</h1>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          <select value={viewMonth} onChange={e=>setViewMonth(e.target.value)} style={{...IS,width:"auto",padding:"4px 8px",fontSize:12}}>
+            {months.map(m=><option key={m} value={m}>{m}</option>)}
+            {!months.length&&<option value={MO}>{MO}</option>}
+          </select>
+          <span style={{fontSize:12,color:"#9AABB8"}}>{branches.find(b=>b.id===user.bid)?.name}</span>
+        </div>
+      </div>
+    </div>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:24}}>
       <Card label="Score" value={total+"%"} accent={sc}/><Card label="Met" value={res.filter(r=>r.s!==null&&r.s>=r.k.w).length+"/"+res.filter(r=>r.s!==null).length} accent="#00B4D8"/>
     </div>
-    <div style={wrapS}><div style={headS}><b>Breakdown</b></div><div style={{padding:"16px 20px"}}>{res.map((r,i)=>{
+
+    {trendData.length>1&&<div style={wrapS}><div style={headS}><b>My Trend</b></div>
+      <div style={{padding:"16px 20px",display:"flex",alignItems:"flex-end",gap:6,height:120}}>
+        {trendData.map(d=><div key={d.mo} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+          <span style={{fontSize:10,fontWeight:600,color:d.mo===viewMonth?"#00B4D8":"#6B7D8E"}}>{d.total}%</span>
+          <div style={{width:"100%",maxWidth:48,height:Math.max((d.total/tMax)*70,4),borderRadius:"4px 4px 0 0",background:d.mo===viewMonth?"linear-gradient(180deg,#00B4D8,#0077B6)":"#E4EBF0"}}/>
+          <span style={{fontSize:9,color:d.mo===viewMonth?"#00B4D8":"#9AABB8",fontWeight:d.mo===viewMonth?600:400}}>{d.mo.slice(5)}</span>
+        </div>)}
+      </div>
+    </div>}
+
+    <div style={wrapS}><div style={headS}><b>Breakdown — {viewMonth}</b></div><div style={{padding:"16px 20px"}}>{res.map((r,i)=>{
       const pw=r.s!==null?Math.min((r.s/r.k.w)*100,150):0;
       const bc=r.s===null?"#E4EBF0":r.s>=r.k.w?"#22C55E":r.s>=r.k.w*.7?"#F58634":"#EF4444";
       return<div key={i} style={{marginBottom:16}}>
@@ -213,7 +333,7 @@ function PharmDash({user,entries,bt,et,branches}){
 
 function EntryPage({user,emps,entries,setEntries,branches,bt,et}){
   const[se,setSe]=useState("");const[sm,setSm]=useState(MO);const[vals,setVals]=useState({});
-  const ph=emps.filter(e=>e.role==="pharmacist");const em=ph.find(e=>e.id===se);
+  const ph=emps.filter(e=>e.role==="pharmacist"||e.role==="manager");const em=ph.find(e=>e.id===se);
   const save=async()=>{if(!se||!em)return;const n=Object.entries(vals).filter(([,v])=>v!=="").map(([kid,v])=>({eid:se,kid,bid:em.bid,v:Number(v),mo:sm,by:user.id}));setEntries(p=>[...p.filter(e=>!(e.eid===se&&e.mo===sm&&n.some(x=>x.kid===e.kid))),...n]);
     if(LIVE){for(const en of n){await sbUpsert("kpi_entries",{employee_id:en.eid,kpi_id:en.kid,branch_id:en.bid,value:en.v,month:en.mo,entered_by:en.by},"employee_id,kpi_id,month");}}
     setVals({});};
@@ -515,10 +635,173 @@ function FilesPage({user,branches,files,setFiles,folders,setFolders}){
   </div>;
 }
 
+// ── Salary Page ──
+function SalaryPage({user,emps,branches,salary,setSalary}){
+  const[selMonth,setSelMonth]=useState(MO);const[showAdd,setShowAdd]=useState(false);
+  const[sf,setSf]=useState({eid:"",base:0,housing:0,transport:0,bonus:0,overtime:0,deductions:0,dnotes:""});
+  const isAcct=user.role==="accountant";const isAdmin=user.role==="admin";
+  const canEdit=isAdmin||isAcct;
+  const moSal=salary.filter(s=>s.mo===selMonth);
+  const months=[...new Set(salary.map(s=>s.mo))].sort().reverse();
+  if(!months.includes(selMonth)&&!months.includes(MO))months.unshift(MO);
+
+  const saveSal=async()=>{
+    if(!sf.eid)return;
+    const net=Number(sf.base)+Number(sf.housing)+Number(sf.transport)+Number(sf.bonus)+Number(sf.overtime)-Number(sf.deductions);
+    const entry={id:"sal"+Date.now(),eid:sf.eid,mo:selMonth,base:Number(sf.base),housing:Number(sf.housing),transport:Number(sf.transport),bonus:Number(sf.bonus),overtime:Number(sf.overtime),deductions:Number(sf.deductions),dnotes:sf.dnotes,net,by:user.id};
+    setSalary(p=>[...p.filter(s=>!(s.eid===sf.eid&&s.mo===selMonth)),entry]);
+    if(LIVE)await sbUpsert("salary_entries",{employee_id:sf.eid,month:selMonth,base_salary:sf.base,housing:sf.housing,transport:sf.transport,bonus:sf.bonus,overtime:sf.overtime,deductions:sf.deductions,deduction_notes:sf.dnotes,entered_by:user.id},"employee_id,month");
+    setSf({eid:"",base:0,housing:0,transport:0,bonus:0,overtime:0,deductions:0,dnotes:""});setShowAdd(false);
+  };
+
+  const staff=emps.filter(e=>e.role==="pharmacist"||e.role==="manager");
+
+  return<div>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24,flexWrap:"wrap",gap:12}}>
+      <div><h1 style={{fontSize:26,fontWeight:500}}>Salary</h1>
+        <select value={selMonth} onChange={e=>setSelMonth(e.target.value)} style={{...IS,width:"auto",padding:"4px 8px",fontSize:12,marginTop:4}}>
+          {[...new Set([MO,...months])].sort().reverse().map(m=><option key={m} value={m}>{m}</option>)}
+        </select>
+      </div>
+      {canEdit&&<button onClick={()=>setShowAdd(true)} style={BS}>+ Add Salary</button>}
+    </div>
+    {moSal.length===0?<p style={{color:"#9AABB8",textAlign:"center",padding:40}}>No salary data for {selMonth}</p>:
+    <div style={wrapS}><div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",minWidth:700}}>
+      <thead><tr><Th>Employee</Th><Th>Branch</Th><Th>Base</Th><Th>Housing</Th><Th>Transport</Th><Th>Bonus</Th><Th>OT</Th><Th>Deductions</Th><Th>Net</Th></tr></thead>
+      <tbody>{moSal.map(s=>{const emp=emps.find(e=>e.id===s.eid);return<tr key={s.id} style={{borderBottom:"1px solid #E4EBF0"}}>
+        <Td b>{emp?.name}</Td><Td>{branches.find(b=>b.id===emp?.bid)?.name}</Td>
+        <Td>{s.base?.toLocaleString()}</Td><Td>{s.housing?.toLocaleString()}</Td><Td>{s.transport?.toLocaleString()}</Td>
+        <Td><span style={{color:"#22C55E"}}>{s.bonus?.toLocaleString()}</span></Td>
+        <Td>{s.overtime?.toLocaleString()}</Td>
+        <Td><span style={{color:"#EF4444"}}>{s.deductions?.toLocaleString()}</span>{s.dnotes&&<div style={{fontSize:10,color:"#9AABB8"}}>{s.dnotes}</div>}</Td>
+        <Td b><span style={{color:"#0077B6"}}>{s.net?.toLocaleString()} SAR</span></Td>
+      </tr>})}</tbody>
+    </table></div></div>}
+    <Modal open={showAdd} onClose={()=>setShowAdd(false)} title={"Add Salary — "+selMonth}>
+      <div style={{marginBottom:14}}><label style={LS}>Employee</label><select value={sf.eid} onChange={e=>setSf({...sf,eid:e.target.value})} style={IS}><option value="">Select...</option>{staff.map(e=><option key={e.id} value={e.id}>{e.name} — {branches.find(b=>b.id===e.bid)?.name}</option>)}</select></div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+        <div style={{marginBottom:10}}><label style={LS}>Base Salary</label><input type="number" value={sf.base} onChange={e=>setSf({...sf,base:e.target.value})} style={IS}/></div>
+        <div style={{marginBottom:10}}><label style={LS}>Housing</label><input type="number" value={sf.housing} onChange={e=>setSf({...sf,housing:e.target.value})} style={IS}/></div>
+        <div style={{marginBottom:10}}><label style={LS}>Transport</label><input type="number" value={sf.transport} onChange={e=>setSf({...sf,transport:e.target.value})} style={IS}/></div>
+        <div style={{marginBottom:10}}><label style={LS}>Bonus</label><input type="number" value={sf.bonus} onChange={e=>setSf({...sf,bonus:e.target.value})} style={IS}/></div>
+        <div style={{marginBottom:10}}><label style={LS}>Overtime</label><input type="number" value={sf.overtime} onChange={e=>setSf({...sf,overtime:e.target.value})} style={IS}/></div>
+        <div style={{marginBottom:10}}><label style={LS}>Deductions</label><input type="number" value={sf.deductions} onChange={e=>setSf({...sf,deductions:e.target.value})} style={IS}/></div>
+      </div>
+      <div style={{marginBottom:14}}><label style={LS}>Deduction Notes</label><input value={sf.dnotes} onChange={e=>setSf({...sf,dnotes:e.target.value})} style={IS} placeholder="Reason for deductions..."/></div>
+      <div style={{padding:"10px 14px",background:"#E8F8FC",borderRadius:8,marginBottom:14,fontSize:13,color:"#0077B6",fontWeight:600}}>Net: {(Number(sf.base)+Number(sf.housing)+Number(sf.transport)+Number(sf.bonus)+Number(sf.overtime)-Number(sf.deductions)).toLocaleString()} SAR</div>
+      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setShowAdd(false)} style={BG}>Cancel</button><button onClick={saveSal} style={BS}>Save</button></div>
+    </Modal>
+  </div>;
+}
+
+// ── Warehouse Page ──
+function WarehousePage({user,emps,branches,orders,setOrders}){
+  const[showAdd,setShowAdd]=useState(false);const[filter,setFilter]=useState("all");
+  const[of,setOf]=useState({bid:"",product:"",qty:"",unit:"pcs",notes:""});
+  const canEdit=user.role==="admin"||user.role==="accountant";
+
+  const addOrder=async()=>{
+    if(!of.product||!of.qty||!of.bid)return;
+    const o={id:"wo"+Date.now(),bid:of.bid,product:of.product,qty:Number(of.qty),unit:of.unit,notes:of.notes,status:"pending",by:user.id,cat:new Date().toISOString()};
+    setOrders(p=>[o,...p]);
+    if(LIVE)await sbInsert("warehouse_orders",{branch_id:of.bid,product_name:of.product,quantity:of.qty,unit:of.unit,notes:of.notes,created_by:user.id});
+    setOf({bid:"",product:"",qty:"",unit:"pcs",notes:""});setShowAdd(false);
+  };
+
+  const updateStatus=async(id,status)=>{
+    setOrders(p=>p.map(o=>o.id===id?{...o,status}:o));
+    if(LIVE)await sbUpdate("warehouse_orders",id,{status,approved_by:user.id});
+  };
+
+  const filtered=filter==="all"?orders:orders.filter(o=>o.status===filter);
+  const counts={pending:orders.filter(o=>o.status==="pending").length,approved:orders.filter(o=>o.status==="approved").length,delivered:orders.filter(o=>o.status==="delivered").length};
+
+  return<div>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24,flexWrap:"wrap",gap:12}}>
+      <div><h1 style={{fontSize:26,fontWeight:500}}>Warehouse</h1><p style={{fontSize:13,color:"#6B7D8E"}}>{counts.pending} pending · {counts.approved} approved · {counts.delivered} delivered</p></div>
+      {canEdit&&<button onClick={()=>setShowAdd(true)} style={BS}>+ New Order</button>}
+    </div>
+    <div style={{display:"flex",gap:4,marginBottom:20,background:"#fff",borderRadius:10,padding:4,border:"1px solid #E4EBF0",width:"fit-content"}}>
+      {[{id:"all",l:"All"},{id:"pending",l:"Pending"},{id:"approved",l:"Approved"},{id:"delivered",l:"Delivered"}].map(f=>
+        <button key={f.id} onClick={()=>setFilter(f.id)} style={{...TS,background:filter===f.id?"linear-gradient(135deg,#00B4D8,#0077B6)":"transparent",color:filter===f.id?"#fff":"#6B7D8E"}}>{f.l}</button>
+      )}
+    </div>
+    {filtered.length===0?<p style={{color:"#9AABB8",textAlign:"center",padding:40}}>No orders</p>:
+    <div style={wrapS}><table style={{width:"100%",borderCollapse:"collapse"}}>
+      <thead><tr><Th>Product</Th><Th>Branch</Th><Th>Qty</Th><Th>Notes</Th><Th>Status</Th>{canEdit&&<Th>Action</Th>}</tr></thead>
+      <tbody>{filtered.map(o=><tr key={o.id} style={{borderBottom:"1px solid #E4EBF0"}}>
+        <Td b>{o.product}</Td>
+        <Td>{branches.find(b=>b.id===o.bid)?.name}</Td>
+        <Td>{o.qty} {o.unit}</Td>
+        <Td>{o.notes||"—"}</Td>
+        <Td><Pill type={o.status==="pending"?"warn":o.status==="approved"?"cyan":o.status==="delivered"?"success":"danger"}>{o.status}</Pill></Td>
+        {canEdit&&<Td>
+          <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+            {o.status==="pending"&&<button onClick={()=>updateStatus(o.id,"approved")} style={{...BG,fontSize:10,padding:"3px 8px",color:"#0077B6"}}>Approve</button>}
+            {o.status==="approved"&&<button onClick={()=>updateStatus(o.id,"delivered")} style={{...BG,fontSize:10,padding:"3px 8px",color:"#22C55E"}}>Delivered</button>}
+            {o.status!=="cancelled"&&<button onClick={()=>updateStatus(o.id,"cancelled")} style={{...BG,fontSize:10,padding:"3px 8px",color:"#EF4444"}}>Cancel</button>}
+          </div>
+        </Td>}
+      </tr>)}</tbody>
+    </table></div>}
+    <Modal open={showAdd} onClose={()=>setShowAdd(false)} title="New Order">
+      <div style={{marginBottom:14}}><label style={LS}>Branch</label><select value={of.bid} onChange={e=>setOf({...of,bid:e.target.value})} style={IS}><option value="">Select...</option>{branches.map(b=><option key={b.id} value={b.id}>{b.name}</option>)}</select></div>
+      <div style={{marginBottom:14}}><label style={LS}>Product</label><input value={of.product} onChange={e=>setOf({...of,product:e.target.value})} style={IS} placeholder="Product name..."/></div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
+        <div><label style={LS}>Quantity</label><input type="number" value={of.qty} onChange={e=>setOf({...of,qty:e.target.value})} style={IS}/></div>
+        <div><label style={LS}>Unit</label><select value={of.unit} onChange={e=>setOf({...of,unit:e.target.value})} style={IS}><option value="pcs">Pieces</option><option value="box">Boxes</option><option value="carton">Cartons</option><option value="kg">KG</option></select></div>
+      </div>
+      <div style={{marginBottom:14}}><label style={LS}>Notes</label><input value={of.notes} onChange={e=>setOf({...of,notes:e.target.value})} style={IS} placeholder="Optional..."/></div>
+      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setShowAdd(false)} style={BG}>Cancel</button><button onClick={addOrder} style={BS}>Submit</button></div>
+    </Modal>
+  </div>;
+}
+
+// ── Profile Page ──
+function ProfilePage({user,setUser,branches}){
+  const[editing,setEditing]=useState(false);
+  const[f,setF]=useState({name:user.name,phone:user.phone||"",email:user.email||""});
+  const[msg,setMsg]=useState("");
+
+  const save=async()=>{
+    setUser(u=>({...u,name:f.name,phone:f.phone,email:f.email}));
+    if(LIVE)await sbUpdate("employees",user.id,{name:f.name,phone:f.phone,email:f.email});
+    setMsg("Profile updated!");setEditing(false);setTimeout(()=>setMsg(""),2000);
+  };
+
+  return<div>
+    <h1 style={{fontSize:26,fontWeight:500,marginBottom:24}}>My Profile</h1>
+    <div style={{maxWidth:480}}>
+      <div style={{...cardS,marginBottom:20}}>
+        <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:20}}>
+          <div style={{width:56,height:56,borderRadius:14,background:"linear-gradient(135deg,#00B4D8,#0077B6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:700,color:"#fff"}}>{user.name[0]}</div>
+          <div>
+            <div style={{fontSize:18,fontWeight:600}}>{user.name}</div>
+            <div style={{display:"flex",gap:6,marginTop:4}}><RP role={user.role}/><Pill type="cyan">{branches.find(b=>b.id===user.bid)?.name||"All branches"}</Pill></div>
+          </div>
+        </div>
+        {msg&&<div style={{fontSize:12,color:"#22C55E",marginBottom:12,padding:8,background:"#F0FDF4",borderRadius:8}}>{msg}</div>}
+        {!editing?<>
+          <div style={{marginBottom:12}}><span style={{fontSize:11,color:"#9AABB8",textTransform:"uppercase"}}>Phone</span><div style={{fontSize:14,marginTop:2}}>{user.phone||"Not set"}</div></div>
+          <div style={{marginBottom:12}}><span style={{fontSize:11,color:"#9AABB8",textTransform:"uppercase"}}>Email</span><div style={{fontSize:14,marginTop:2}}>{user.email||"Not set"}</div></div>
+          <div style={{marginBottom:12}}><span style={{fontSize:11,color:"#9AABB8",textTransform:"uppercase"}}>Role</span><div style={{fontSize:14,marginTop:2,textTransform:"capitalize"}}>{user.role}</div></div>
+          <div style={{marginBottom:12}}><span style={{fontSize:11,color:"#9AABB8",textTransform:"uppercase"}}>Branch</span><div style={{fontSize:14,marginTop:2}}>{branches.find(b=>b.id===user.bid)?.name||"All branches"}</div></div>
+          <button onClick={()=>setEditing(true)} style={BS}>Edit Profile</button>
+        </>:<>
+          <div style={{marginBottom:14}}><label style={LS}>Name</label><input value={f.name} onChange={e=>setF({...f,name:e.target.value})} style={IS}/></div>
+          <div style={{marginBottom:14}}><label style={LS}>Phone</label><input value={f.phone} onChange={e=>setF({...f,phone:e.target.value})} style={IS}/></div>
+          <div style={{marginBottom:14}}><label style={LS}>Email</label><input value={f.email} onChange={e=>setF({...f,email:e.target.value})} style={IS}/></div>
+          <div style={{display:"flex",gap:8}}><button onClick={()=>setEditing(false)} style={BG}>Cancel</button><button onClick={save} style={BS}>Save</button></div>
+        </>}
+      </div>
+    </div>
+  </div>;
+}
+
 function SettingsPage({emps,branches,setBranches,bt,setBt,et,setEt,ap,setAp,kpis,setKpis,rolePerms,setRolePerms}){
   const[tab,setTab]=useState("kpis");const[showAdd,setShowAdd]=useState(false);const[nb,setNb]=useState("");const[tm,setTm]=useState(MO);
   const[editKpi,setEditKpi]=useState(null);const[kw,setKw]=useState("");
-  const accts=emps.filter(e=>e.role==="accountant");const pharms=emps.filter(e=>e.role==="pharmacist");
+  const accts=emps.filter(e=>e.role==="accountant");const pharms=emps.filter(e=>e.role==="pharmacist"||e.role==="manager");
   const bK=kpis.filter(k=>k.tl==="branch"&&k.code!=="expire");const eK=kpis.filter(k=>k.tl==="pharmacist");
   const addB=async()=>{if(!nb)return;const bid="b"+Date.now();setBranches(p=>[...p,{id:bid,name:nb}]);
     if(LIVE){const r=await sbInsert("branches",{name:nb});if(r)setBranches(p=>p.map(x=>x.id===bid?{id:r.id,name:r.name}:x));}
@@ -534,7 +817,7 @@ function SettingsPage({emps,branches,setBranches,bt,setBt,et,setEt,ap,setAp,kpis
     setEditKpi(null);setKw("");}};
   const totalW=kpis.reduce((s,k)=>s+k.w,0);
   const tabs=[{id:"kpis",l:"KPIs"},{id:"bt",l:"Branch Targets"},{id:"et",l:"Emp Targets"},{id:"ap",l:"Accountant"},{id:"perms",l:"Permissions"},{id:"br",l:"Branches"}];
-  const allTabs=[{id:"dashboard",l:"Dashboard"},{id:"entry",l:"KPI Entry"},{id:"mylog",l:"My Entries"},{id:"emps",l:"Employees"},{id:"tasks",l:"Tasks"},{id:"msgs",l:"Messages"},{id:"files",l:"Files"}];
+  const allTabs=[{id:"dashboard",l:"Dashboard"},{id:"entry",l:"KPI Entry"},{id:"mylog",l:"My Entries"},{id:"emps",l:"Employees"},{id:"tasks",l:"Tasks"},{id:"msgs",l:"Messages"},{id:"files",l:"Files"},{id:"salary",l:"Salary"},{id:"warehouse",l:"Warehouse"},{id:"profile",l:"My Profile"}];
   const roles=["pharmacist","manager","accountant"];
   const togPerm=(role,tabId)=>setRolePerms(p=>({...p,[role]:{...p[role],[tabId]:!(p[role]||{})[tabId]}}));
   return<div>
@@ -574,6 +857,14 @@ function SettingsPage({emps,branches,setBranches,bt,setBt,et,setEt,ap,setAp,kpis
       <p style={{fontSize:12,color:"#9AABB8",marginBottom:14}}>New total will be: <b>{totalW-(kpis.find(k=>k.id===editKpi)?.w||0)+Number(kw||0)}%</b></p>
       <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>{setEditKpi(null);setKw("");}} style={BG}>Cancel</button><button onClick={saveWeight} style={BS}>Save</button></div>
     </Modal>
+  </div>;
+}
+
+// ── Toast Notification ──
+function ToastContainer({toasts,setToasts}){
+  React.useEffect(()=>{if(toasts.length){const t=setTimeout(()=>setToasts(p=>p.slice(1)),3000);return()=>clearTimeout(t);}});
+  return<div style={{position:"fixed",top:16,right:16,zIndex:200,display:"flex",flexDirection:"column",gap:8}}>
+    {toasts.map(t=><div key={t.id} style={{padding:"10px 16px",borderRadius:10,fontSize:12,fontWeight:600,color:"#fff",background:t.type==="ok"?"#22C55E":"#EF4444",boxShadow:"0 4px 12px rgba(0,0,0,.15)"}}>{t.msg}</div>)}
   </div>;
 }
 
@@ -647,7 +938,10 @@ function LoginPage({onLogin,onSetup,live}){
 function loadState(key,fb){try{const v=localStorage.getItem("fb_"+key);return v?JSON.parse(v):fb;}catch(e){return fb;}}
 function saveState(key,v){try{localStorage.setItem("fb_"+key,JSON.stringify(v));}catch(e){}}
 
-// Supabase helpers
+// Supabase helpers with toast feedback
+let _toast=null;
+function setToastFn(fn){_toast=fn;}
+function toast(msg,type){if(_toast)_toast({msg,type,id:Date.now()});}
 async function sbLoad(table,filter){
   if(!SB)return null;
   let q=SB.from(table).select("*");
@@ -656,10 +950,10 @@ async function sbLoad(table,filter){
   if(error){console.error("sbLoad",table,error);return null;}
   return data;
 }
-async function sbInsert(table,row){if(!SB)return null;const{data,error}=await SB.from(table).insert(row).select();if(error)console.error("sbInsert",error);return data?.[0];}
-async function sbUpdate(table,id,vals){if(!SB)return;const{error}=await SB.from(table).update(vals).eq("id",id);if(error)console.error("sbUpdate",error);}
-async function sbDelete(table,id){if(!SB)return;const{error}=await SB.from(table).delete().eq("id",id);if(error)console.error("sbDelete",error);}
-async function sbUpsert(table,row,conflict){if(!SB)return null;const{data,error}=await SB.from(table).upsert(row,{onConflict:conflict}).select();if(error)console.error("sbUpsert",error);return data?.[0];}
+async function sbInsert(table,row){if(!SB)return null;const{data,error}=await SB.from(table).insert(row).select();if(error){console.error("sbInsert",error);toast("Save failed: "+error.message,"err");return null;}toast("Saved","ok");return data?.[0];}
+async function sbUpdate(table,id,vals){if(!SB)return;const{error}=await SB.from(table).update(vals).eq("id",id);if(error){console.error("sbUpdate",error);toast("Update failed: "+error.message,"err");}else toast("Updated","ok");}
+async function sbDelete(table,id){if(!SB)return;const{error}=await SB.from(table).delete().eq("id",id);if(error){console.error("sbDelete",error);toast("Delete failed: "+error.message,"err");}else toast("Deleted","ok");}
+async function sbUpsert(table,row,conflict){if(!SB)return null;const{data,error}=await SB.from(table).upsert(row,{onConflict:conflict}).select();if(error){console.error("sbUpsert",error);toast("Save failed: "+error.message,"err");return null;}toast("Saved","ok");return data?.[0];}
 
 // Map Supabase data to app format
 function mapEmp(e){return{id:e.id,name:e.name,role:e.role,bid:e.branch_id,phone:e.phone,email:e.email,active:e.is_active};}
@@ -687,10 +981,14 @@ function App(){
   const[ap,setAp]=useState(()=>loadState("ap",[{id:"ap1",eid:"e2",kid:"k1"},{id:"ap2",eid:"e2",kid:"k4"}]));
   const[files,setFiles]=useState(()=>loadState("files",I_FILES.map(f=>({...f,fid:null}))));
   const[folders,setFolders]=useState(()=>loadState("folders",[{id:"fl1",name:"SOPs",parent:null},{id:"fl2",name:"Training",parent:null},{id:"fl3",name:"Reports",parent:null}]));
+  const[salaries,setSalaries]=useState(()=>loadState("salaries",[]));
+  const[whItems,setWhItems]=useState(()=>loadState("whItems",[]));
+  const[toasts,setToasts]=useState([]);
+  React.useEffect(()=>{setToastFn(t=>setToasts(p=>[...p,t]));},[]);
   const DEF_PERMS={
-    pharmacist:{dashboard:true,entry:false,mylog:false,emps:false,tasks:true,msgs:true,files:true,settings:false},
-    manager:{dashboard:true,entry:false,mylog:false,emps:false,tasks:true,msgs:true,files:true,settings:false},
-    accountant:{dashboard:false,entry:true,mylog:true,emps:false,tasks:false,msgs:false,files:false,settings:false}
+    pharmacist:{dashboard:true,entry:false,mylog:false,emps:false,tasks:true,msgs:true,files:true,settings:false,salary:false,warehouse:false,profile:true},
+    manager:{dashboard:true,entry:false,mylog:false,emps:false,tasks:true,msgs:true,files:true,settings:false,salary:false,warehouse:false,profile:true},
+    accountant:{dashboard:false,entry:true,mylog:true,emps:false,tasks:false,msgs:false,files:false,settings:false,salary:true,warehouse:true,profile:true}
   };
   const[rolePerms,setRolePerms]=useState(()=>loadState("rolePerms",DEF_PERMS));
   const[mobMenu,setMobMenu]=useState(false);
@@ -788,6 +1086,8 @@ function App(){
   React.useEffect(()=>{if(!LIVE)saveState("files",files)},[files]);
   React.useEffect(()=>{if(!LIVE)saveState("folders",folders)},[folders]);
   React.useEffect(()=>{saveState("rolePerms",rolePerms)},[rolePerms]);
+  React.useEffect(()=>{if(!LIVE)saveState("salaries",salaries)},[salaries]);
+  React.useEffect(()=>{if(!LIVE)saveState("whItems",whItems)},[whItems]);
 
   // ── Loading screen ──
   if(loading)return<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#F7F9FC"}}>
@@ -851,12 +1151,15 @@ function App(){
     {id:"mylog",l:"My Entries",show:canSee("mylog")},
     {id:"emps",l:"Employees",show:canSee("emps")},
     {id:"tasks",l:"Tasks",show:canSee("tasks"),badge:tasks.filter(t=>!t.done).length},
+    {id:"salary",l:"Salary",show:canSee("salary")},
+    {id:"warehouse",l:"Warehouse",show:canSee("warehouse")},
     {id:"files",l:"Files",show:canSee("files")},
+    {id:"profile",l:"My Profile",show:canSee("profile")},
     {id:"settings",l:"Settings",show:r==="admin"}
   ];
 
   const resetData=()=>{if(confirm("Reset all data to demo defaults?")){
-    ["loggedIn","page","user","emps","kpis","entries","anns","dms","tasks","branches","bt","et","ap","files","folders","rolePerms"].forEach(k=>localStorage.removeItem("fb_"+k));
+    ["loggedIn","page","user","emps","kpis","entries","anns","dms","tasks","branches","bt","et","ap","files","folders","rolePerms","salaries","whItems","salary","orders"].forEach(k=>localStorage.removeItem("fb_"+k));
     location.reload();
   }};
 
@@ -888,13 +1191,16 @@ function App(){
 
   const mainContent=<>
     {page==="dashboard"&&r==="pharmacist"&&<PharmDash user={user} entries={entries} bt={bt} et={et} branches={branches}/>}
-    {page==="dashboard"&&(r==="admin"||r==="manager")&&<Dashboard user={user} emps={emps} entries={entries} bt={bt} et={et} branches={branches}/>}
+    {page==="dashboard"&&(r==="admin"||r==="manager")&&<Dashboard user={user} emps={emps} entries={entries} bt={bt} et={et} branches={branches} kpis={kpis}/>}
     {page==="entry"&&<EntryPage user={user} emps={emps} entries={entries} setEntries={setEntries} branches={branches} bt={bt} et={et}/>}
     {page==="mylog"&&<AcctLog user={user} entries={entries} emps={emps} branches={branches}/>}
     {page==="emps"&&<EmpsPage emps={emps} setEmps={setEmps} branches={branches}/>}
     {page==="tasks"&&<TasksPage user={user} emps={emps} tasks={tasks} setTasks={setTasks}/>}
     {page==="msgs"&&<MsgsPage user={user} emps={emps} anns={anns} setAnns={setAnns} dms={dms} setDms={setDms}/>}
     {page==="files"&&<FilesPage user={user} branches={branches} files={files} setFiles={setFiles} folders={folders} setFolders={setFolders}/>}
+    {page==="salary"&&<SalaryPage user={user} emps={emps} branches={branches} salary={salaries} setSalary={setSalaries}/>}
+    {page==="warehouse"&&<WarehousePage user={user} emps={emps} branches={branches} orders={whItems} setOrders={setWhItems}/>}
+    {page==="profile"&&<ProfilePage user={user} setUser={setUser} branches={branches}/>}
     {page==="settings"&&<SettingsPage emps={emps} branches={branches} setBranches={setBranches} bt={bt} setBt={setBt} et={et} setEt={setEt} ap={ap} setAp={setAp} kpis={kpis} setKpis={setKpis} rolePerms={rolePerms} setRolePerms={setRolePerms}/>}
   </>;
 
