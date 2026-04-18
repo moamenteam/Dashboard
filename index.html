@@ -40,7 +40,7 @@ const LIVE = !!SB;
 
 const{useState}=React;
 
-const BRANCHES=[{id:"b1",name:"Sawarmah"},{id:"b2",name:"Maajer"},{id:"b3",name:"Sabya"},{id:"b4",name:"Kharish"},{id:"b5",name:"Makrmyah"},{id:"b6",name:"Dehmah"}];
+const BRANCHES=[{id:"b1",name:"Sawarmah"},{id:"b2",name:"Maajer"},{id:"b3",name:"Sabya"},{id:"b4",name:"Kharish"},{id:"b5",name:"Makrmyah"},{id:"b6",name:"Dehmah"},{id:"b7",name:"Warehouse"}];
 
 const KPIS=[
 {id:"k1",name:"Sales Target",code:"sales",inp:"sar",w:55,tl:"branch",st:"prop",cap:false,ft:null},
@@ -425,17 +425,28 @@ function EmpsPage({emps,setEmps,branches}){
   </div>;
 }
 
-function MsgsPage({user,emps,anns,setAnns,dms,setDms}){
+function MsgsPage({user,emps,branches,anns,setAnns,dms,setDms}){
   const[tab,setTab]=useState("ann");const[showA,setShowA]=useState(false);const[showD,setShowD]=useState(false);
   const[af,setAf]=useState({title:"",body:"",pri:"normal",wa:false});
-  const[df,setDf]=useState({rid:"",body:""});
+  const[df,setDf]=useState({mode:"emp",bid:"",rid:"",body:""});
   const[delAnn,setDelAnn]=useState(null);
   const sendA=async()=>{if(!af.title||!af.body)return;const a={id:"a"+Date.now(),sid:user.id,...af,tt:"all",at:new Date().toISOString()};setAnns(p=>[a,...p]);
     if(LIVE)await sbInsert("announcements",{sender_id:user.id,title:af.title,body:af.body,target_type:"all",priority:af.pri,notify_whatsapp:af.wa});
     setAf({title:"",body:"",pri:"normal",wa:false});setShowA(false);};
-  const sendD=async()=>{if(!df.body||!df.rid)return;const d={id:"dm"+Date.now(),sid:user.id,...df,read:false,at:new Date().toISOString()};setDms(p=>[...p,d]);
-    if(LIVE)await sbInsert("direct_messages",{sender_id:user.id,receiver_id:df.rid,body:df.body});
-    setDf({rid:"",body:""});setShowD(false);};
+  const sendD=async()=>{
+    if(!df.body)return;
+    if(df.mode==="emp"&&!df.rid)return;
+    if(df.mode==="branch"&&!df.bid)return;
+    // Determine recipients
+    let recipients=[];
+    if(df.mode==="emp"){recipients=[df.rid];}
+    else if(df.mode==="branch"){recipients=emps.filter(e=>e.bid===df.bid&&e.id!==user.id).map(e=>e.id);}
+    // Send to each recipient
+    const newDms=recipients.map(rid=>({id:"dm"+Date.now()+rid,sid:user.id,rid,body:df.body,read:false,at:new Date().toISOString()}));
+    setDms(p=>[...p,...newDms]);
+    if(LIVE){for(const rid of recipients){await sbInsert("direct_messages",{sender_id:user.id,receiver_id:rid,body:df.body});}}
+    setDf({mode:"emp",bid:"",rid:"",body:""});setShowD(false);
+  };
   return<div>
     <div style={{display:"flex",justifyContent:"space-between",marginBottom:24}}><h1 style={{fontSize:26,fontWeight:500}}>Messages</h1><div style={{display:"flex",gap:8}}><button onClick={()=>setShowD(true)} style={BG}>Message</button>{user.role==="admin"&&<button onClick={()=>setShowA(true)} style={BS}>+ Announce</button>}</div></div>
     <div style={{display:"flex",gap:4,marginBottom:20,background:"#fff",borderRadius:10,padding:4,border:"1px solid #E4EBF0",width:"fit-content"}}>
@@ -463,10 +474,28 @@ function MsgsPage({user,emps,anns,setAnns,dms,setDms}){
       <div style={{display:"flex",gap:12,fontSize:12,marginBottom:14}}><label><input type="checkbox" checked={af.pri==="urgent"} onChange={e=>setAf({...af,pri:e.target.checked?"urgent":"normal"})}/> Urgent</label><label><input type="checkbox" checked={af.wa} onChange={e=>setAf({...af,wa:e.target.checked})}/> WhatsApp</label></div>
       <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setShowA(false)} style={BG}>Cancel</button><button onClick={sendA} style={BS}>Send</button></div>
     </Modal>
-    <Modal open={showD} onClose={()=>setShowD(false)} title="Message">
-      <div style={{marginBottom:14}}><label style={LS}>To</label><select value={df.rid} onChange={e=>setDf({...df,rid:e.target.value})} style={IS}><option value="">Select...</option>{emps.filter(e=>e.id!==user.id).map(e=><option key={e.id} value={e.id}>{e.name}</option>)}</select></div>
-      <div style={{marginBottom:14}}><label style={LS}>Message</label><textarea value={df.body} onChange={e=>setDf({...df,body:e.target.value})} style={{...IS,minHeight:60}}/></div>
-      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setShowD(false)} style={BG}>Cancel</button><button onClick={sendD} style={BS}>Send</button></div>
+    <Modal open={showD} onClose={()=>setShowD(false)} title="Send Message">
+      <div style={{marginBottom:14}}><label style={LS}>Send To</label>
+        <div style={{display:"flex",gap:4,background:"#F7F9FC",borderRadius:8,padding:3,marginBottom:10}}>
+          <button onClick={()=>setDf({...df,mode:"emp",bid:""})} style={{...TS,flex:1,padding:"6px 12px",background:df.mode==="emp"?"linear-gradient(135deg,#00B4D8,#0077B6)":"transparent",color:df.mode==="emp"?"#fff":"#6B7D8E"}}>Employee</button>
+          <button onClick={()=>setDf({...df,mode:"branch",rid:""})} style={{...TS,flex:1,padding:"6px 12px",background:df.mode==="branch"?"linear-gradient(135deg,#00B4D8,#0077B6)":"transparent",color:df.mode==="branch"?"#fff":"#6B7D8E"}}>Entire Branch</button>
+        </div>
+        {df.mode==="emp"&&<select value={df.rid} onChange={e=>setDf({...df,rid:e.target.value})} style={IS}>
+          <option value="">Select employee...</option>
+          {branches.filter(b=>emps.some(e=>e.bid===b.id&&e.id!==user.id)).map(b=><optgroup key={b.id} label={b.name}>
+            {emps.filter(e=>e.bid===b.id&&e.id!==user.id).map(e=><option key={e.id} value={e.id}>{e.name} ({e.role})</option>)}
+          </optgroup>)}
+          {emps.filter(e=>!e.bid&&e.id!==user.id).length>0&&<optgroup label="No branch">
+            {emps.filter(e=>!e.bid&&e.id!==user.id).map(e=><option key={e.id} value={e.id}>{e.name} ({e.role})</option>)}
+          </optgroup>}
+        </select>}
+        {df.mode==="branch"&&<select value={df.bid} onChange={e=>setDf({...df,bid:e.target.value})} style={IS}>
+          <option value="">Select branch...</option>
+          {branches.map(b=>{const count=emps.filter(e=>e.bid===b.id&&e.id!==user.id).length;return<option key={b.id} value={b.id}>{b.name} ({count} employees)</option>})}
+        </select>}
+      </div>
+      <div style={{marginBottom:14}}><label style={LS}>Message</label><textarea value={df.body} onChange={e=>setDf({...df,body:e.target.value})} style={{...IS,minHeight:80}} placeholder="Type your message..."/></div>
+      <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button onClick={()=>setShowD(false)} style={BG}>Cancel</button><button onClick={sendD} style={BS}>Send {df.mode==="branch"&&df.bid?`to ${emps.filter(e=>e.bid===df.bid&&e.id!==user.id).length}`:""}</button></div>
     </Modal>
     <Modal open={!!delAnn} onClose={()=>setDelAnn(null)} title="Delete Announcement">
       <p style={{fontSize:14,color:"#6B7D8E",marginBottom:16}}>Delete this announcement permanently?</p>
@@ -641,7 +670,7 @@ function SalaryPage({user,emps,branches,salary,setSalary}){
   const[sf,setSf]=useState({eid:"",base:0,housing:0,transport:0,bonus:0,overtime:0,deductions:0,dnotes:""});
   const isAcct=user.role==="accountant";const isAdmin=user.role==="admin";
   const canEdit=isAdmin||isAcct;
-  const moSal=salary.filter(s=>s.mo===selMonth);
+  const moSal=canEdit?salary.filter(s=>s.mo===selMonth):salary.filter(s=>s.mo===selMonth&&s.eid===user.id);
   const months=[...new Set(salary.map(s=>s.mo))].sort().reverse();
   if(!months.includes(selMonth)&&!months.includes(MO))months.unshift(MO);
 
@@ -817,7 +846,7 @@ function SettingsPage({emps,branches,setBranches,bt,setBt,et,setEt,ap,setAp,kpis
     setEditKpi(null);setKw("");}};
   const totalW=kpis.reduce((s,k)=>s+k.w,0);
   const tabs=[{id:"kpis",l:"KPIs"},{id:"bt",l:"Branch Targets"},{id:"et",l:"Emp Targets"},{id:"ap",l:"Accountant"},{id:"perms",l:"Permissions"},{id:"br",l:"Branches"}];
-  const allTabs=[{id:"dashboard",l:"Dashboard"},{id:"entry",l:"KPI Entry"},{id:"mylog",l:"My Entries"},{id:"emps",l:"Employees"},{id:"tasks",l:"Tasks"},{id:"msgs",l:"Messages"},{id:"files",l:"Files"},{id:"salary",l:"Salary"},{id:"warehouse",l:"Warehouse"},{id:"profile",l:"My Profile"}];
+  const allTabs=[{id:"dashboard",l:"Dashboard"},{id:"entry",l:"KPI Entry"},{id:"mylog",l:"My Entries"},{id:"emps",l:"Employees"},{id:"tasks",l:"Tasks"},{id:"msgs",l:"Messages"},{id:"files",l:"Files"},{id:"salary",l:"Salary"},{id:"profile",l:"My Profile"}];
   const roles=["pharmacist","manager","accountant"];
   const togPerm=(role,tabId)=>setRolePerms(p=>({...p,[role]:{...p[role],[tabId]:!(p[role]||{})[tabId]}}));
   return<div>
@@ -986,9 +1015,9 @@ function App(){
   const[toasts,setToasts]=useState([]);
   React.useEffect(()=>{setToastFn(t=>setToasts(p=>[...p,t]));},[]);
   const DEF_PERMS={
-    pharmacist:{dashboard:true,entry:false,mylog:false,emps:false,tasks:true,msgs:true,files:true,settings:false,salary:false,warehouse:false,profile:true},
-    manager:{dashboard:true,entry:false,mylog:false,emps:false,tasks:true,msgs:true,files:true,settings:false,salary:false,warehouse:false,profile:true},
-    accountant:{dashboard:false,entry:true,mylog:true,emps:false,tasks:false,msgs:false,files:false,settings:false,salary:true,warehouse:true,profile:true}
+    pharmacist:{dashboard:true,entry:false,mylog:false,emps:false,tasks:true,msgs:true,files:true,settings:false,salary:true,profile:true},
+    manager:{dashboard:true,entry:false,mylog:false,emps:false,tasks:true,msgs:true,files:true,settings:false,salary:true,profile:true},
+    accountant:{dashboard:false,entry:true,mylog:true,emps:false,tasks:false,msgs:false,files:false,settings:false,salary:true,profile:true}
   };
   const[rolePerms,setRolePerms]=useState(()=>loadState("rolePerms",DEF_PERMS));
   const[mobMenu,setMobMenu]=useState(false);
@@ -1152,7 +1181,6 @@ function App(){
     {id:"emps",l:"Employees",show:canSee("emps")},
     {id:"tasks",l:"Tasks",show:canSee("tasks"),badge:tasks.filter(t=>!t.done).length},
     {id:"salary",l:"Salary",show:canSee("salary")},
-    {id:"warehouse",l:"Warehouse",show:canSee("warehouse")},
     {id:"files",l:"Files",show:canSee("files")},
     {id:"profile",l:"My Profile",show:canSee("profile")},
     {id:"settings",l:"Settings",show:r==="admin"}
@@ -1196,10 +1224,9 @@ function App(){
     {page==="mylog"&&<AcctLog user={user} entries={entries} emps={emps} branches={branches}/>}
     {page==="emps"&&<EmpsPage emps={emps} setEmps={setEmps} branches={branches}/>}
     {page==="tasks"&&<TasksPage user={user} emps={emps} tasks={tasks} setTasks={setTasks}/>}
-    {page==="msgs"&&<MsgsPage user={user} emps={emps} anns={anns} setAnns={setAnns} dms={dms} setDms={setDms}/>}
+    {page==="msgs"&&<MsgsPage user={user} emps={emps} branches={branches} anns={anns} setAnns={setAnns} dms={dms} setDms={setDms}/>}
     {page==="files"&&<FilesPage user={user} branches={branches} files={files} setFiles={setFiles} folders={folders} setFolders={setFolders}/>}
     {page==="salary"&&<SalaryPage user={user} emps={emps} branches={branches} salary={salaries} setSalary={setSalaries}/>}
-    {page==="warehouse"&&<WarehousePage user={user} emps={emps} branches={branches} orders={whItems} setOrders={setWhItems}/>}
     {page==="profile"&&<ProfilePage user={user} setUser={setUser} branches={branches}/>}
     {page==="settings"&&<SettingsPage emps={emps} branches={branches} setBranches={setBranches} bt={bt} setBt={setBt} et={et} setEt={setEt} ap={ap} setAp={setAp} kpis={kpis} setKpis={setKpis} rolePerms={rolePerms} setRolePerms={setRolePerms}/>}
   </>;
